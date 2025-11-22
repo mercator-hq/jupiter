@@ -1,0 +1,143 @@
+# GoReleaser configuration for Mercator Jupiter
+# Documentation: https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    # Ensure dependencies are up to date
+    - go mod tidy
+    # Run tests before building
+    - go test ./...
+
+builds:
+  - id: mercator
+    main: ./cmd/mercator
+    binary: mercator
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Set version information via ldflags
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.GitCommit={{.Commit}}
+      - -X main.BuildDate={{.Date}}
+    # Ignore unsupported combinations
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: mercator
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+      - docs/**/*
+      - examples/**/*
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - 'merge conflict'
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+  groups:
+    - title: 'New Features'
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: 'Performance Improvements'
+      regexp: "^.*perf[(\\w)]*:+.*$"
+      order: 2
+    - title: 'Refactors'
+      regexp: "^.*refactor[(\\w)]*:+.*$"
+      order: 3
+    - title: 'Other Changes'
+      order: 999
+
+release:
+  github:
+    owner: mercator-hq
+    name: jupiter
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## Mercator Jupiter {{ .Tag }}
+
+    GitOps-native LLM governance runtime and policy engine.
+
+    ### Installation
+
+    **macOS (arm64):**
+    ```bash
+    curl -L https://github.com/mercator-hq/jupiter/releases/download/{{ .Tag }}/mercator_{{ .Tag }}_Darwin_arm64.tar.gz | tar xz
+    sudo mv mercator /usr/local/bin/
+    ```
+
+    **macOS (amd64):**
+    ```bash
+    curl -L https://github.com/mercator-hq/jupiter/releases/download/{{ .Tag }}/mercator_{{ .Tag }}_Darwin_x86_64.tar.gz | tar xz
+    sudo mv mercator /usr/local/bin/
+    ```
+
+    **Linux (amd64):**
+    ```bash
+    curl -L https://github.com/mercator-hq/jupiter/releases/download/{{ .Tag }}/mercator_{{ .Tag }}_Linux_x86_64.tar.gz | tar xz
+    sudo mv mercator /usr/local/bin/
+    ```
+
+    **Linux (arm64):**
+    ```bash
+    curl -L https://github.com/mercator-hq/jupiter/releases/download/{{ .Tag }}/mercator_{{ .Tag }}_Linux_arm64.tar.gz | tar xz
+    sudo mv mercator /usr/local/bin/
+    ```
+
+    **Windows (PowerShell):**
+    ```powershell
+    curl.exe -L -o mercator.zip https://github.com/mercator-hq/jupiter/releases/download/{{ .Tag }}/mercator_{{ .Tag }}_Windows_x86_64.zip
+    Expand-Archive mercator.zip -DestinationPath .
+    ```
+
+    ### What's Changed
+  footer: |
+    **Full Changelog**: https://github.com/mercator-hq/jupiter/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ---
+
+    **Documentation**: https://github.com/mercator-hq/jupiter/tree/{{ .Tag }}/docs
+
+announce:
+  skip: true

@@ -44,6 +44,37 @@ Mercator Jupiter is an open-source HTTP proxy that provides policy enforcement, 
 
 ### Installation
 
+**Download pre-built binary (recommended):**
+
+Download the latest release for your platform from the [releases page](https://github.com/mercator-hq/jupiter/releases/latest).
+
+```bash
+# macOS (arm64)
+curl -L https://github.com/mercator-hq/jupiter/releases/latest/download/mercator_Darwin_arm64.tar.gz | tar xz
+sudo mv mercator /usr/local/bin/
+
+# macOS (amd64)
+curl -L https://github.com/mercator-hq/jupiter/releases/latest/download/mercator_Darwin_x86_64.tar.gz | tar xz
+sudo mv mercator /usr/local/bin/
+
+# Linux (amd64)
+curl -L https://github.com/mercator-hq/jupiter/releases/latest/download/mercator_Linux_x86_64.tar.gz | tar xz
+sudo mv mercator /usr/local/bin/
+
+# Linux (arm64)
+curl -L https://github.com/mercator-hq/jupiter/releases/latest/download/mercator_Linux_arm64.tar.gz | tar xz
+sudo mv mercator /usr/local/bin/
+
+# Verify installation
+mercator version
+```
+
+**Using Go install:**
+
+```bash
+go install mercator-hq/jupiter/cmd/mercator@latest
+```
+
 **From source:**
 
 ```bash
@@ -56,12 +87,6 @@ go build -o mercator ./cmd/mercator
 
 # Install to PATH
 sudo mv mercator /usr/local/bin/
-```
-
-**Using Go install:**
-
-```bash
-go install mercator-hq/jupiter/cmd/mercator@latest
 ```
 
 ### Running Mercator
@@ -397,6 +422,51 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 Types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`
+
+## Releases
+
+Mercator Jupiter uses automated releases via [GoReleaser](https://goreleaser.com/) and GitHub Actions.
+
+### Creating a Release
+
+Releases are triggered by pushing a semantic version tag:
+
+```bash
+# Create and push a new tag
+git tag -a v0.2.0 -m "Release v0.2.0: Add new features"
+git push origin v0.2.0
+```
+
+The GitHub Actions workflow will automatically:
+1. Run all tests
+2. Build binaries for multiple platforms (Linux/macOS/Windows, amd64/arm64)
+3. Create a GitHub release
+4. Upload binaries and checksums
+5. Generate a changelog from conventional commits
+
+### Release Artifacts
+
+Each release includes:
+- **Binaries**: Pre-compiled for all major platforms
+- **Archives**: `.tar.gz` (Linux/macOS) and `.zip` (Windows)
+- **Checksums**: SHA256 checksums for verification
+- **Changelog**: Auto-generated from commit history
+- **Documentation**: Complete docs included in archives
+
+### Version Numbering
+
+Mercator Jupiter follows [Semantic Versioning](https://semver.org/):
+- **Major (v1.0.0)**: Breaking changes
+- **Minor (v0.2.0)**: New features (backwards compatible)
+- **Patch (v0.1.1)**: Bug fixes (backwards compatible)
+
+### Pre-releases
+
+Pre-release versions can be tagged with suffixes:
+```bash
+git tag -a v0.2.0-rc.1 -m "Release candidate 1"
+git push origin v0.2.0-rc.1
+```
 
 ## Security
 
