@@ -48,26 +48,27 @@ func TestRollingWindow_Expiration(t *testing.T) {
 }
 
 func TestRollingWindow_RollingBehavior(t *testing.T) {
-	rw := NewRollingWindow(300*time.Millisecond, 100*time.Millisecond)
+	// Use longer windows to make test less sensitive to scheduling delays
+	rw := NewRollingWindow(1*time.Second, 300*time.Millisecond)
 
 	// T=0: Add $10
 	rw.Add(10.00)
-	time.Sleep(110 * time.Millisecond) // Ensure we're in next bucket
+	time.Sleep(350 * time.Millisecond) // Ensure we're in next bucket
 
-	// T=110ms: Add $20 (different bucket)
+	// T=350ms: Add $20 (different bucket)
 	rw.Add(20.00)
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
-	// T=120ms: Should have $30
+	// T=400ms: Should have $30
 	sum := rw.Sum()
 	if sum != 30.00 {
-		t.Errorf("Expected 30.00 at T=120ms, got %.2f", sum)
+		t.Errorf("Expected 30.00 at T=400ms, got %.2f", sum)
 	}
 
-	// Wait for first spending to expire (window is 300ms, first entry at T=0)
-	time.Sleep(200 * time.Millisecond) // T=320ms
+	// Wait for first spending to expire (window is 1s, first entry at T=0)
+	time.Sleep(700 * time.Millisecond) // T=1100ms
 
-	// First spending should be expired, only second remains
+	// First spending should be expired (>1s old), only second remains
 	sum = rw.Sum()
 	if sum != 20.00 {
 		t.Errorf("Expected 20.00 after first expiration, got %.2f", sum)

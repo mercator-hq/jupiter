@@ -179,7 +179,8 @@ func TestPolicyLoader_LoadFromDirectory_DirectoryNotFound(t *testing.T) {
 func TestPolicyLoader_LoadFromDirectory_EmptyDirectory(t *testing.T) {
 	loader := NewPolicyLoader(DefaultLoaderConfig(), parser.NewParser())
 
-	dir := filepath.Join("testdata", "empty")
+	// Create an empty directory for testing (git doesn't track empty dirs)
+	dir := t.TempDir()
 	_, err := loader.LoadFromDirectory(dir)
 
 	if err == nil {
