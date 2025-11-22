@@ -48,30 +48,40 @@ func TestRollingWindow_Expiration(t *testing.T) {
 }
 
 func TestRollingWindow_RollingBehavior(t *testing.T) {
-	// Use longer windows to make test less sensitive to scheduling delays
-	rw := NewRollingWindow(1*time.Second, 300*time.Millisecond)
+	// Use longer windows and more generous timing to handle race detector overhead
+	// Race detector can add significant latency, making precise timing unreliable
+	rw := NewRollingWindow(5*time.Second, 500*time.Millisecond)
 
 	// T=0: Add $10
+	start := time.Now()
 	rw.Add(10.00)
-	time.Sleep(350 * time.Millisecond) // Ensure we're in next bucket
+	time.Sleep(2600 * time.Millisecond) // Wait well into a later bucket (2.6s)
 
-	// T=350ms: Add $20 (different bucket)
+	// T=~2600ms: Add $20 (different bucket, in the 2500ms bucket)
+	// This provides 2.5s separation from the first bucket
 	rw.Add(20.00)
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
-	// T=400ms: Should have $30
+	// T=~2800ms: Should have $30 (both buckets within 5s window)
 	sum := rw.Sum()
 	if sum != 30.00 {
-		t.Errorf("Expected 30.00 at T=400ms, got %.2f", sum)
+		t.Errorf("Expected 30.00 before expiration, got %.2f", sum)
 	}
 
-	// Wait for first spending to expire (window is 1s, first entry at T=0)
-	time.Sleep(700 * time.Millisecond) // T=1100ms
+	// Wait for first spending to expire (window is 5s, first entry at T=0)
+	// Sleep until T=7s (first bucket at T=0 expires at T=5, extra 2s margin)
+	// Second bucket at T=~2.5s is still within window (7 - 5 = 2s cutoff, 2.5s > 2s)
+	elapsed := time.Since(start)
+	targetTime := 7 * time.Second
+	remainingSleep := targetTime - elapsed
+	if remainingSleep > 0 {
+		time.Sleep(remainingSleep)
+	}
 
-	// First spending should be expired (>1s old), only second remains
+	// First spending should be expired (>5s old), only second remains
 	sum = rw.Sum()
 	if sum != 20.00 {
-		t.Errorf("Expected 20.00 after first expiration, got %.2f", sum)
+		t.Errorf("Expected 20.00 after first expiration, got %.2f (elapsed: %v)", sum, time.Since(start))
 	}
 }
 
