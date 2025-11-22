@@ -18,7 +18,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc"
+	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -54,7 +54,7 @@ func New(cfg *config.TracingConfig) (*Tracer, error) {
 
 	// If tracing is disabled, return noop tracer
 	if !cfg.Enabled {
-		t.tracer = trace.NewNoopTracerProvider().Tracer("mercator-jupiter")
+		t.tracer = noop.NewTracerProvider().Tracer("mercator-jupiter")
 		return t, nil
 	}
 
@@ -165,11 +165,6 @@ func createOTLPExporter(cfg *config.TracingConfig) (sdktrace.SpanExporter, error
 	if cfg.OTLP.Timeout > 0 {
 		opts = append(opts, otlptracegrpc.WithTimeout(cfg.OTLP.Timeout))
 	}
-
-	// Add dial option to handle connection
-	opts = append(opts, otlptracegrpc.WithDialOption(
-		grpc.WithBlock(),
-	))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

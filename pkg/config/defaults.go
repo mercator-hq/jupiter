@@ -71,18 +71,18 @@ const (
 	DefaultMTLSEnabled = false
 
 	// Processing defaults
-	DefaultTokensEstimator              = "simple"
-	DefaultTokensCacheSize              = 100
-	DefaultTokensCharsPerToken          = 4.0
-	DefaultCostsPricing                 = 0.001 // $0.001 per 1K tokens
-	DefaultContentPIIEnabled            = true
-	DefaultContentPIIRedactInLogs       = true
-	DefaultContentSensitiveEnabled      = true
-	DefaultContentSensitiveSeverity     = "medium"
-	DefaultContentInjectionEnabled      = true
-	DefaultContentInjectionConfidence   = 0.7
-	DefaultConversationWarnThreshold    = 0.8
-	DefaultConversationContextWindow    = 4096
+	DefaultTokensEstimator            = "simple"
+	DefaultTokensCacheSize            = 100
+	DefaultTokensCharsPerToken        = 4.0
+	DefaultCostsPricing               = 0.001 // $0.001 per 1K tokens
+	DefaultContentPIIEnabled          = true
+	DefaultContentPIIRedactInLogs     = true
+	DefaultContentSensitiveEnabled    = true
+	DefaultContentSensitiveSeverity   = "medium"
+	DefaultContentInjectionEnabled    = true
+	DefaultContentInjectionConfidence = 0.7
+	DefaultConversationWarnThreshold  = 0.8
+	DefaultConversationContextWindow  = 4096
 )
 
 // ApplyDefaults applies default values to a Config struct.
@@ -141,11 +141,8 @@ func ApplyDefaults(cfg *Config) {
 	applyPolicyValidationDefaults(cfg)
 
 	// Evidence defaults
-	if !cfg.Evidence.Enabled {
-		// Evidence enabled defaults to true, so we need special handling
-		// We'll apply this in validation instead to distinguish between
-		// "not set" and "explicitly set to false"
-	}
+	// Note: Evidence.Enabled defaults to true, but we don't set it here
+	// to distinguish between "not set" and "explicitly set to false" during validation
 	if cfg.Evidence.Backend == "" {
 		cfg.Evidence.Backend = DefaultEvidenceBackend
 	}
@@ -330,12 +327,12 @@ func applyProcessingDefaults(cfg *Config) {
 	}
 	if cfg.Processing.Tokens.Models == nil {
 		cfg.Processing.Tokens.Models = map[string]float64{
-			"gpt-4":          4.0,
-			"gpt-3.5-turbo":  4.0,
-			"claude-3-opus":  3.5,
+			"gpt-4":           4.0,
+			"gpt-3.5-turbo":   4.0,
+			"claude-3-opus":   3.5,
 			"claude-3-sonnet": 3.5,
-			"claude-3-haiku": 3.5,
-			"default":        DefaultTokensCharsPerToken,
+			"claude-3-haiku":  3.5,
+			"default":         DefaultTokensCharsPerToken,
 		}
 	}
 
@@ -423,13 +420,13 @@ func applyProcessingDefaults(cfg *Config) {
 	}
 	if cfg.Processing.Conversation.MaxContextWindow == nil {
 		cfg.Processing.Conversation.MaxContextWindow = map[string]int{
-			"gpt-4":          8192,
-			"gpt-4-turbo":    128000,
-			"gpt-3.5-turbo":  4096,
-			"claude-3-opus":  200000,
+			"gpt-4":           8192,
+			"gpt-4-turbo":     128000,
+			"gpt-3.5-turbo":   4096,
+			"claude-3-opus":   200000,
 			"claude-3-sonnet": 200000,
-			"claude-3-haiku": 200000,
-			"default":        DefaultConversationContextWindow,
+			"claude-3-haiku":  200000,
+			"default":         DefaultConversationContextWindow,
 		}
 	}
 

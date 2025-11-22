@@ -133,7 +133,7 @@ func TestPolicyRegistry_Unregister(t *testing.T) {
 	registry := NewPolicyRegistry()
 	policy := createTestPolicy("test-policy", "1.0.0")
 
-	registry.Register(policy)
+	_ = registry.Register(policy)
 
 	err := registry.Unregister("test-policy")
 
@@ -171,7 +171,7 @@ func TestPolicyRegistry_Get(t *testing.T) {
 	registry := NewPolicyRegistry()
 	policy := createTestPolicy("test-policy", "1.0.0")
 
-	registry.Register(policy)
+	_ = registry.Register(policy)
 
 	retrieved, ok := registry.Get("test-policy")
 
@@ -207,7 +207,7 @@ func TestPolicyRegistry_GetAll(t *testing.T) {
 		createTestPolicy("policy-3", "1.0.0"),
 	}
 
-	registry.RegisterMultiple(policies)
+	_ = registry.RegisterMultiple(policies)
 
 	allPolicies := registry.GetAll()
 
@@ -225,7 +225,7 @@ func TestPolicyRegistry_GetAllSorted(t *testing.T) {
 		createTestPolicy("policy-b", "1.0.0"),
 	}
 
-	registry.RegisterMultiple(policies)
+	_ = registry.RegisterMultiple(policies)
 
 	sortedPolicies := registry.GetAllSorted()
 
@@ -249,13 +249,13 @@ func TestPolicyRegistry_Count(t *testing.T) {
 		t.Errorf("Count() = %d, want 0", registry.Count())
 	}
 
-	registry.Register(createTestPolicy("policy-1", "1.0.0"))
+	_ = registry.Register(createTestPolicy("policy-1", "1.0.0"))
 
 	if registry.Count() != 1 {
 		t.Errorf("Count() = %d, want 1", registry.Count())
 	}
 
-	registry.Register(createTestPolicy("policy-2", "1.0.0"))
+	_ = registry.Register(createTestPolicy("policy-2", "1.0.0"))
 
 	if registry.Count() != 2 {
 		t.Errorf("Count() = %d, want 2", registry.Count())
@@ -270,7 +270,7 @@ func TestPolicyRegistry_Clear(t *testing.T) {
 		createTestPolicy("policy-2", "1.0.0"),
 	}
 
-	registry.RegisterMultiple(policies)
+	_ = registry.RegisterMultiple(policies)
 
 	registry.Clear()
 
@@ -287,7 +287,7 @@ func TestPolicyRegistry_Clone(t *testing.T) {
 		createTestPolicy("policy-2", "1.0.0"),
 	}
 
-	registry.RegisterMultiple(policies)
+	_ = registry.RegisterMultiple(policies)
 
 	clone := registry.Clone()
 
@@ -307,7 +307,7 @@ func TestPolicyRegistry_Clone(t *testing.T) {
 	}
 
 	// Verify modifying clone doesn't affect original
-	clone.Register(createTestPolicy("policy-3", "1.0.0"))
+	_ = clone.Register(createTestPolicy("policy-3", "1.0.0"))
 
 	if registry.Count() == clone.Count() {
 		t.Error("Modifying clone affected original registry")
@@ -322,7 +322,7 @@ func TestPolicyRegistry_Replace(t *testing.T) {
 		createTestPolicy("policy-1", "1.0.0"),
 		createTestPolicy("policy-2", "1.0.0"),
 	}
-	registry.RegisterMultiple(initial)
+	_ = registry.RegisterMultiple(initial)
 
 	// Replace with new policies
 	replacement := []*ast.Policy{
@@ -363,7 +363,7 @@ func TestPolicyRegistry_GetVersion(t *testing.T) {
 	version1 := registry.GetVersion()
 
 	// Register a policy
-	registry.Register(createTestPolicy("policy-1", "1.0.0"))
+	_ = registry.Register(createTestPolicy("policy-1", "1.0.0"))
 
 	version2 := registry.GetVersion()
 
@@ -383,7 +383,7 @@ func TestPolicyRegistry_GetLoadTime(t *testing.T) {
 
 	// Replace policies (should update load time)
 	time.Sleep(10 * time.Millisecond)
-	registry.Replace([]*ast.Policy{createTestPolicy("policy-1", "1.0.0")})
+	_ = registry.Replace([]*ast.Policy{createTestPolicy("policy-1", "1.0.0")})
 
 	newLoadTime := registry.GetLoadTime()
 
@@ -399,7 +399,7 @@ func TestPolicyRegistry_GetMetadata(t *testing.T) {
 	policy.Author = "Test Author"
 	policy.Description = "Test Description"
 
-	registry.Register(policy)
+	_ = registry.Register(policy)
 
 	metadata := registry.GetMetadata()
 
@@ -424,7 +424,7 @@ func TestPolicyRegistry_HasPolicy(t *testing.T) {
 		t.Error("HasPolicy(nonexistent) = true, want false")
 	}
 
-	registry.Register(createTestPolicy("test-policy", "1.0.0"))
+	_ = registry.Register(createTestPolicy("test-policy", "1.0.0"))
 
 	if !registry.HasPolicy("test-policy") {
 		t.Error("HasPolicy(test-policy) = false, want true")
@@ -440,7 +440,7 @@ func TestPolicyRegistry_GetPolicyNames(t *testing.T) {
 		createTestPolicy("policy-b", "1.0.0"),
 	}
 
-	registry.RegisterMultiple(policies)
+	_ = registry.RegisterMultiple(policies)
 
 	names := registry.GetPolicyNames()
 
@@ -472,7 +472,7 @@ func TestPolicyRegistry_GetStats(t *testing.T) {
 		{Name: "rule-4", Enabled: false},
 	}
 
-	registry.RegisterMultiple([]*ast.Policy{policy1, policy2})
+	_ = registry.RegisterMultiple([]*ast.Policy{policy1, policy2})
 
 	stats := registry.GetStats()
 
@@ -500,7 +500,7 @@ func TestPolicyRegistry_ConcurrentAccess(t *testing.T) {
 	policy1, _ := loader.LoadFromFile(path1)
 	policy2, _ := loader.LoadFromFile(path2)
 
-	registry.RegisterMultiple([]*ast.Policy{policy1, policy2})
+	_ = registry.RegisterMultiple([]*ast.Policy{policy1, policy2})
 
 	// Concurrent reads and writes
 	var wg sync.WaitGroup

@@ -21,15 +21,15 @@ func TestAnalyzer_AnalyzeConversation(t *testing.T) {
 	analyzer := NewAnalyzer(cfg)
 
 	tests := []struct {
-		name                  string
-		messages              []types.Message
-		model                 string
-		totalTokens           int
-		expectedTurnCount     int
-		expectedMessageCount  int
-		expectedHasHistory    bool
-		expectedPercentMin    float64
-		expectedPercentMax    float64
+		name                 string
+		messages             []types.Message
+		model                string
+		totalTokens          int
+		expectedTurnCount    int
+		expectedMessageCount int
+		expectedHasHistory   bool
+		expectedPercentMin   float64
+		expectedPercentMax   float64
 	}{
 		{
 			name:                 "empty conversation",
@@ -179,12 +179,12 @@ func TestAnalyzer_ExtractSystemPrompts(t *testing.T) {
 	analyzer := NewAnalyzer(cfg)
 
 	tests := []struct {
-		name                 string
-		messages             []types.Message
+		name                  string
+		messages              []types.Message
 		expectedSystemPrompts int
 	}{
 		{
-			name:                 "no system prompts",
+			name: "no system prompts",
 			messages: []types.Message{
 				{Role: "user", Content: "Hello"},
 			},

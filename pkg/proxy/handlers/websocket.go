@@ -48,7 +48,7 @@ func (h *WebSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_ = errResp // Placeholder for future implementation
 
 	// Write simple error message
-	w.Write([]byte(`{"error":{"message":"WebSocket support is not implemented in this version","type":"not_found","code":"not_implemented"}}`))
+	_, _ = w.Write([]byte(`{"error":{"message":"WebSocket support is not implemented in this version","type":"not_found","code":"not_implemented"}}`))
 }
 
 // Note: Full WebSocket implementation would include:

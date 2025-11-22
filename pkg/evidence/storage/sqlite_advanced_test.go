@@ -36,7 +36,7 @@ func TestSQLiteStorage_QueryTimeout(t *testing.T) {
 			RequestTime: now,
 			Model:       "gpt-4",
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	// Create a context with very short timeout
@@ -74,7 +74,7 @@ func TestSQLiteStorage_CountTimeout(t *testing.T) {
 			RequestTime: now,
 			Model:       "gpt-4",
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	// Create cancelled context
@@ -136,7 +136,7 @@ func TestSQLiteStorage_ReadOnlyDatabasePath(t *testing.T) {
 	if err := os.Chmod(tmpDir, 0444); err != nil {
 		t.Skipf("Cannot change directory permissions: %v", err)
 	}
-	defer os.Chmod(tmpDir, 0755) // Restore for cleanup
+	defer func() { _ = os.Chmod(tmpDir, 0755) }() // Restore for cleanup
 
 	// Try to open database in read-only directory
 	_, err = NewSQLiteStorage(config)
@@ -382,7 +382,7 @@ func TestSQLiteStorage_IndexPerformance(t *testing.T) {
 			Provider:    getProvider(i),
 			UserID:      fmt.Sprintf("user-%d", i%10),
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	// Test indexed query (timestamp)
@@ -459,7 +459,7 @@ func TestSQLiteStorage_DeletePerformance(t *testing.T) {
 			RequestTime: now.Add(time.Duration(i) * time.Second),
 			Model:       "gpt-4",
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	// Delete half the records

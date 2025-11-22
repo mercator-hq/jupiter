@@ -16,9 +16,9 @@ func TestConfig_ToTLSConfig(t *testing.T) {
 		{
 			name: "valid TLS 1.3 config",
 			config: Config{
-				Enabled:  true,
-				CertFile: "testdata/server-cert.pem",
-				KeyFile:  "testdata/server-key.pem",
+				Enabled:    true,
+				CertFile:   "testdata/server-cert.pem",
+				KeyFile:    "testdata/server-key.pem",
 				MinVersion: "1.3",
 			},
 			expectError: false,
@@ -26,9 +26,9 @@ func TestConfig_ToTLSConfig(t *testing.T) {
 		{
 			name: "valid TLS 1.2 config",
 			config: Config{
-				Enabled:  true,
-				CertFile: "testdata/server-cert.pem",
-				KeyFile:  "testdata/server-key.pem",
+				Enabled:    true,
+				CertFile:   "testdata/server-cert.pem",
+				KeyFile:    "testdata/server-key.pem",
 				MinVersion: "1.2",
 			},
 			expectError: false,
@@ -83,9 +83,9 @@ func TestConfig_ToTLSConfig(t *testing.T) {
 		{
 			name: "with cipher suites",
 			config: Config{
-				Enabled:  true,
-				CertFile: "testdata/server-cert.pem",
-				KeyFile:  "testdata/server-key.pem",
+				Enabled:    true,
+				CertFile:   "testdata/server-cert.pem",
+				KeyFile:    "testdata/server-key.pem",
 				MinVersion: "1.3",
 				CipherSuites: []string{
 					"TLS_AES_128_GCM_SHA256",
@@ -365,9 +365,9 @@ func TestConfig_MTLSConfiguration(t *testing.T) {
 
 func TestConfig_parseClientAuthType(t *testing.T) {
 	tests := []struct {
-		name       string
-		authType   string
-		expected   tls.ClientAuthType
+		name     string
+		authType string
+		expected tls.ClientAuthType
 	}{
 		{
 			name:     "require",
@@ -415,7 +415,7 @@ func TestConfig_parseClientAuthType(t *testing.T) {
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) &&
 		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-		len(s) > len(substr) && findSubstring(s, substr)))
+			len(s) > len(substr) && findSubstring(s, substr)))
 }
 
 func findSubstring(s, substr string) bool {

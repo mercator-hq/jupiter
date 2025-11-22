@@ -370,7 +370,7 @@ func (r *Recorder) updateEvidenceWithResponse(record *evidence.EvidenceRecord, r
 
 	// Extract conversation context
 	if enrichedResp.OriginalResponse != nil {
-		record.TurnNumber = 1 // TODO: Extract from conversation context
+		record.TurnNumber = 1     // TODO: Extract from conversation context
 		record.ContextUsage = 0.0 // TODO: Calculate from token usage
 	}
 }

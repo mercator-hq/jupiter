@@ -206,7 +206,7 @@ func TestContextLogger(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }()
 
 	// Create context logger
 	ctxLogger := NewContextLogger(logger, ctx)
@@ -241,7 +241,7 @@ func TestContextLogger_With(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }()
 
 	ctxLogger := NewContextLogger(logger, ctx)
 

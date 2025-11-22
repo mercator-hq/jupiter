@@ -505,10 +505,7 @@ func TestProvider_ErrorSanitization(t *testing.T) {
 		if strings.Contains(errStr, sensitiveAPIKey) {
 			t.Errorf("error message contains full API key: %q", errStr)
 		}
-		// Redacted versions are OK
-		if !strings.Contains(errStr, "sk-****") {
-			// This is acceptable - provider already redacted it
-		}
+		// Note: Redacted versions (like "sk-****") are acceptable if present
 	})
 
 	t.Run("parse error doesn't leak API key from raw response", func(t *testing.T) {
@@ -568,8 +565,8 @@ func TestProvider_ErrorSanitization(t *testing.T) {
 	t.Run("error sanitization helper", func(t *testing.T) {
 		// Test that we have a way to sanitize strings containing API keys
 		testCases := []struct {
-			input    string
-			contains []string
+			input       string
+			contains    []string
 			notContains []string
 		}{
 			{

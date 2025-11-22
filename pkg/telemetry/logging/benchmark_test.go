@@ -20,7 +20,7 @@ func BenchmarkLogger_Info_Enabled(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -44,7 +44,7 @@ func BenchmarkLogger_Debug_Disabled(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -67,7 +67,7 @@ func BenchmarkLogger_WithRedaction(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -93,7 +93,7 @@ func BenchmarkLogger_WithoutRedaction(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -119,7 +119,7 @@ func BenchmarkLogger_With(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -142,7 +142,7 @@ func BenchmarkLogger_WithContext(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	ctx := context.Background()
 	ctx = WithRequestID(ctx, "req-123")
@@ -169,7 +169,7 @@ func BenchmarkLogger_InfoContext(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	ctx := WithRequestID(context.Background(), "req-123")
 
@@ -225,7 +225,7 @@ func BenchmarkLogger_JSON(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -248,7 +248,7 @@ func BenchmarkLogger_Text(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -271,7 +271,7 @@ func BenchmarkLogger_Parallel(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -298,7 +298,7 @@ func BenchmarkLogger_ManyFields(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -325,7 +325,7 @@ func BenchmarkContextLogger_Info(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+	defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 	ctx := WithRequestID(context.Background(), "req-bench")
 	ctxLogger := NewContextLogger(logger, ctx)
@@ -349,7 +349,7 @@ func BenchmarkLogger_Compare(b *testing.B) {
 			BufferSize: 100000,
 			Writer:     buf,
 		})
-		defer logger.Shutdown()
+		defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -366,7 +366,7 @@ func BenchmarkLogger_Compare(b *testing.B) {
 			BufferSize: 100000,
 			Writer:     buf,
 		})
-		defer logger.Shutdown()
+		defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -383,7 +383,7 @@ func BenchmarkLogger_Compare(b *testing.B) {
 			BufferSize: 100000,
 			Writer:     buf,
 		})
-		defer logger.Shutdown()
+		defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -400,7 +400,7 @@ func BenchmarkLogger_Compare(b *testing.B) {
 			BufferSize: 100000,
 			Writer:     buf,
 		})
-		defer logger.Shutdown()
+		defer func() { _ = logger.Shutdown() }() // Intentionally ignoring error in benchmark cleanup
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {

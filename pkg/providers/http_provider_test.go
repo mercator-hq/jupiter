@@ -20,11 +20,11 @@ func TestHTTPProvider_RetryOn5xx(t *testing.T) {
 		count := atomic.AddInt32(&attemptCount, 1)
 		if count <= 2 {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "internal server error"}`))
+			_, _ = w.Write([]byte(`{"error": "internal server error"}`))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "success"}`))
+		_, _ = w.Write([]byte(`{"message": "success"}`))
 	}))
 	defer server.Close()
 
@@ -106,7 +106,7 @@ func TestHTTPProvider_NoRetryOn4xx(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				atomic.AddInt32(&attemptCount, 1)
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(`{"error": "client error"}`))
+				_, _ = w.Write([]byte(`{"error": "client error"}`))
 			}))
 			defer server.Close()
 
@@ -167,7 +167,7 @@ func TestHTTPProvider_MaxRetries(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&attemptCount, 1)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "internal server error"}`))
+		_, _ = w.Write([]byte(`{"error": "internal server error"}`))
 	}))
 	defer server.Close()
 
@@ -221,7 +221,7 @@ func TestHTTPProvider_ExponentialBackoff(t *testing.T) {
 		atomic.AddInt32(&attemptCount, 1)
 		attemptTimes = append(attemptTimes, time.Now())
 		w.WriteHeader(http.StatusServiceUnavailable)
-		w.Write([]byte(`{"error": "service unavailable"}`))
+		_, _ = w.Write([]byte(`{"error": "service unavailable"}`))
 	}))
 	defer server.Close()
 
@@ -237,7 +237,10 @@ func TestHTTPProvider_ExponentialBackoff(t *testing.T) {
 
 	// Perform request
 	ctx := context.Background()
-	provider.DoRequest(ctx, "POST", server.URL+"/test", []byte(`{"test": true}`), nil)
+	resp, _ := provider.DoRequest(ctx, "POST", server.URL+"/test", []byte(`{"test": true}`), nil)
+	if resp != nil {
+		_ = resp.Body.Close()
+	}
 
 	// Verify exponential backoff timing
 	// Expected delays: 0s (initial), 1s (2^0), 2s (2^1), 4s (2^2)
@@ -271,13 +274,13 @@ func TestHTTPProvider_TimeoutDuringRetry(t *testing.T) {
 		// First attempt succeeds quickly
 		if count == 1 {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"message": "success"}`))
+			_, _ = w.Write([]byte(`{"message": "success"}`))
 			return
 		}
 		// Subsequent attempts hang
 		time.Sleep(5 * time.Second)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "success"}`))
+		_, _ = w.Write([]byte(`{"message": "success"}`))
 	}))
 	defer server.Close()
 
@@ -302,7 +305,7 @@ func TestHTTPProvider_TimeoutDuringRetry(t *testing.T) {
 		server500 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			atomic.AddInt32(&attemptCount, 1)
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "error"}`))
+			_, _ = w.Write([]byte(`{"error": "error"}`))
 		}))
 		defer server500.Close()
 
@@ -376,16 +379,6 @@ func TestHTTPProvider_TimeoutDuringRetry(t *testing.T) {
 	})
 }
 
-// Helper function to read response body
-func readBody(t *testing.T, body io.ReadCloser) string {
-	t.Helper()
-	data, err := io.ReadAll(body)
-	if err != nil {
-		t.Fatalf("failed to read body: %v", err)
-	}
-	return string(data)
-}
-
 // TestHTTPProvider_ConnectionReuse verifies that HTTP connections are reused
 func TestHTTPProvider_ConnectionReuse(t *testing.T) {
 	connectionCount := int32(0)
@@ -395,7 +388,7 @@ func TestHTTPProvider_ConnectionReuse(t *testing.T) {
 		// Track new connections (simplified - in real scenario would use connection ID)
 		atomic.AddInt32(&connectionCount, 1)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "success"}`))
+		_, _ = w.Write([]byte(`{"message": "success"}`))
 	}))
 	defer server.Close()
 
@@ -420,7 +413,7 @@ func TestHTTPProvider_ConnectionReuse(t *testing.T) {
 		if err != nil {
 			t.Fatalf("request %d failed: %v", i, err)
 		}
-		io.ReadAll(resp.Body) // Drain body to allow connection reuse
+		_, _ = io.ReadAll(resp.Body) // Drain body to allow connection reuse
 		resp.Body.Close()
 	}
 
@@ -439,7 +432,7 @@ func TestHTTPProvider_PoolLimitEnforcement(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(100 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "success"}`))
+		_, _ = w.Write([]byte(`{"message": "success"}`))
 	}))
 	defer server.Close()
 
@@ -469,7 +462,7 @@ func TestHTTPProvider_PoolLimitEnforcement(t *testing.T) {
 				errors <- err
 				return
 			}
-			io.ReadAll(resp.Body)
+			_, _ = io.ReadAll(resp.Body) // Drain body to allow connection reuse
 			resp.Body.Close()
 			errors <- nil
 		}(i)

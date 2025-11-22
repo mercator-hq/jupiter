@@ -138,21 +138,6 @@ func createBenchEvalContext() *EvaluationContext {
 	}
 }
 
-func createBenchRequest() *processing.EnrichedRequest {
-	return &processing.EnrichedRequest{
-		RequestID: "bench-123",
-		OriginalRequest: &types.ChatCompletionRequest{
-			Model: "gpt-4",
-		},
-		TokenEstimate: &processing.TokenEstimate{
-			TotalTokens:  1000,
-			PromptTokens: 800,
-		},
-		RiskScore:       3,
-		ComplexityScore: 5,
-	}
-}
-
 func createBenchPolicy(numRules int) *ast.Policy {
 	policy := &ast.Policy{
 		MPLVersion:  "1.0",

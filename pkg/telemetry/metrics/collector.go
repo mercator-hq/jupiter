@@ -40,7 +40,6 @@ type Collector struct {
 
 	// Cardinality tracking
 	cardinalityLimiter *CardinalityLimiter
-	mu                 sync.RWMutex
 }
 
 // NewCollector creates a new metrics collector with the specified configuration

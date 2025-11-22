@@ -121,7 +121,7 @@ func TestLintPoliciesDirectory(t *testing.T) {
 	// Copy valid policy to temp dir
 	validPolicy := filepath.Join(tmpDir, "valid.yaml")
 	data, _ := os.ReadFile("testdata/valid-policy.yaml")
-	os.WriteFile(validPolicy, data, 0644)
+	_ = os.WriteFile(validPolicy, data, 0644)
 
 	// Set flags to lint directory
 	lintFlags.file = ""

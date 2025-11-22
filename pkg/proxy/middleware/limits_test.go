@@ -13,6 +13,11 @@ import (
 	"mercator-hq/jupiter/pkg/limits/ratelimit"
 )
 
+// Test-specific context key
+type testContextKey string
+
+const enrichedRequestKey testContextKey = "enriched_request"
+
 // TestLimitsMiddleware_NoIdentifier tests that requests without identifier pass through.
 func TestLimitsMiddleware_NoIdentifier(t *testing.T) {
 	manager := limits.NewManager(limits.Config{})
@@ -21,7 +26,7 @@ func TestLimitsMiddleware_NoIdentifier(t *testing.T) {
 	middleware := LimitsMiddleware(manager)
 	handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("success"))
+		_, _ = w.Write([]byte("success"))
 	}))
 
 	req := httptest.NewRequest("GET", "/test", nil)
@@ -51,7 +56,7 @@ func TestLimitsMiddleware_WithinLimits(t *testing.T) {
 	middleware := LimitsMiddleware(manager)
 	handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("success"))
+		_, _ = w.Write([]byte("success"))
 	}))
 
 	req := httptest.NewRequest("GET", "/test", nil)
@@ -283,7 +288,7 @@ func TestLimitsMiddleware_EnrichedContext(t *testing.T) {
 	// Request with enriched context
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.Header.Set("Authorization", "Bearer test-key")
-	ctx := context.WithValue(req.Context(), "enriched_request", &enrichedRequestContext{
+	ctx := context.WithValue(req.Context(), enrichedRequestKey, &enrichedRequestContext{
 		estimatedTokens: 2000,
 		estimatedCost:   0.05,
 		model:           "gpt-4",

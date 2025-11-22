@@ -18,7 +18,7 @@ func TestHealthChecker_CircuitBreaker(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&failureCount, 1)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "server error"}`))
+		_, _ = w.Write([]byte(`{"error": "server error"}`))
 	}))
 	defer server.Close()
 
@@ -106,11 +106,11 @@ func TestHealthChecker_Recovery(t *testing.T) {
 		count := atomic.AddInt32(&requestCount, 1)
 		if count <= 3 {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "server error"}`))
+			_, _ = w.Write([]byte(`{"error": "server error"}`))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "success"}`))
+		_, _ = w.Write([]byte(`{"message": "success"}`))
 	}))
 	defer server.Close()
 
@@ -187,10 +187,10 @@ func TestHealthChecker_ConcurrentAccess(t *testing.T) {
 		// Alternate between success and failure
 		if count%2 == 0 {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"message": "success"}`))
+			_, _ = w.Write([]byte(`{"message": "success"}`))
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "server error"}`))
+			_, _ = w.Write([]byte(`{"error": "server error"}`))
 		}
 	}))
 	defer server.Close()
@@ -276,7 +276,7 @@ func TestHealthChecker_PeriodicChecks(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&checkCount, 1)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "healthy"}`))
+		_, _ = w.Write([]byte(`{"message": "healthy"}`))
 	}))
 	defer server.Close()
 
@@ -333,7 +333,7 @@ func TestHealthChecker_BackoffOnFailure(t *testing.T) {
 		timesMu.Unlock()
 
 		w.WriteHeader(http.StatusServiceUnavailable)
-		w.Write([]byte(`{"error": "unhealthy"}`))
+		_, _ = w.Write([]byte(`{"error": "unhealthy"}`))
 	}))
 	defer server.Close()
 
@@ -404,7 +404,7 @@ func TestHealthChecker_StopOnProviderClose(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&checkCount, 1)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "healthy"}`))
+		_, _ = w.Write([]byte(`{"message": "healthy"}`))
 	}))
 	defer server.Close()
 

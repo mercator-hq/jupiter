@@ -16,8 +16,8 @@ import (
 	"mercator-hq/jupiter/pkg/evidence/storage"
 	"mercator-hq/jupiter/pkg/policy/engine"
 	"mercator-hq/jupiter/pkg/policy/engine/source"
-	"mercator-hq/jupiter/pkg/providers"
 	"mercator-hq/jupiter/pkg/providerfactory"
+	"mercator-hq/jupiter/pkg/providers"
 	"mercator-hq/jupiter/pkg/server"
 )
 

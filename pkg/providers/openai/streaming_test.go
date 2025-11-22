@@ -262,7 +262,7 @@ func TestOpenAI_StreamingErrorHandling(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Return 500 error
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "internal server error"}`))
+			_, _ = w.Write([]byte(`{"error": "internal server error"}`))
 		}))
 		defer server.Close()
 
@@ -365,6 +365,7 @@ func TestOpenAI_StreamingClientDisconnect(t *testing.T) {
 
 	// Create context that we'll cancel early
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	stream, err := provider.StreamCompletion(ctx, req)
 	if err != nil {

@@ -35,7 +35,7 @@ func TestNewFileWatcher(t *testing.T) {
 	}
 
 	// Cleanup
-	watcher.Stop()
+	_ = watcher.Stop()
 }
 
 func TestDefaultFileWatcherConfig(t *testing.T) {
@@ -82,7 +82,7 @@ rules: []
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }()
 
 	// Track reload calls
 	var reloadCount atomic.Int32
@@ -105,7 +105,7 @@ rules: []
 	defer cancel()
 
 	go func() {
-		watcher.Watch(ctx, onReload)
+		_ = watcher.Watch(ctx, onReload)
 	}()
 
 	// Wait for watcher to start
@@ -164,7 +164,7 @@ rules: []
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }()
 
 	// Track reload calls
 	var reloadCount atomic.Int32
@@ -184,7 +184,7 @@ rules: []
 	defer cancel()
 
 	go func() {
-		watcher.Watch(ctx, onReload)
+		_ = watcher.Watch(ctx, onReload)
 	}()
 
 	// Wait for watcher to start
@@ -234,7 +234,7 @@ rules: []
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }()
 
 	// Track reload calls
 	var reloadCount atomic.Int32
@@ -249,7 +249,7 @@ rules: []
 	defer cancel()
 
 	go func() {
-		watcher.Watch(ctx, onReload)
+		_ = watcher.Watch(ctx, onReload)
 	}()
 
 	// Wait for watcher to start
@@ -291,7 +291,7 @@ func TestFileWatcher_Stop(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		watcher.Watch(ctx, func() error { return nil })
+		_ = watcher.Watch(ctx, func() error { return nil })
 	}()
 
 	// Wait for watcher to start
@@ -322,14 +322,14 @@ func TestFileWatcher_DoubleStart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }()
 
 	// Start first watch
 	ctx1, cancel1 := context.WithCancel(context.Background())
 	defer cancel1()
 
 	go func() {
-		watcher.Watch(ctx1, func() error { return nil })
+		_ = watcher.Watch(ctx1, func() error { return nil })
 	}()
 
 	// Wait for watcher to start
@@ -366,7 +366,7 @@ func TestFileWatcher_SkipHiddenFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }()
 
 	// Track reload calls
 	reloadCalled := false
@@ -384,7 +384,7 @@ func TestFileWatcher_SkipHiddenFiles(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		watcher.Watch(ctx, onReload)
+		_ = watcher.Watch(ctx, onReload)
 	}()
 
 	// Wait for watcher to start
@@ -464,7 +464,7 @@ func TestFileWatcher_FilterExtensions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }()
 
 	tests := []struct {
 		ext   string
@@ -496,7 +496,7 @@ func TestFileWatcher_ShouldProcessEvent_CaseInsensitive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }()
 
 	tests := []struct {
 		name        string

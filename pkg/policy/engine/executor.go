@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"regexp"
-	"strings"
 
 	"mercator-hq/jupiter/pkg/mpl/ast"
 )
@@ -502,23 +500,4 @@ func extractFieldValue(evalCtx *EvaluationContext, fieldPath string) (interface{
 	default:
 		return nil, fmt.Errorf("unsupported field path: %s", fieldPath)
 	}
-}
-
-// redactWithPattern redacts content based on a regex pattern.
-func redactWithPattern(content, pattern, replacement string) (string, error) {
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		return content, fmt.Errorf("invalid regex pattern: %w", err)
-	}
-
-	return re.ReplaceAllString(content, replacement), nil
-}
-
-// maskString masks a string by replacing all characters except first and last with '*'.
-func maskString(s string) string {
-	if len(s) <= 2 {
-		return "***"
-	}
-
-	return string(s[0]) + strings.Repeat("*", len(s)-2) + string(s[len(s)-1])
 }

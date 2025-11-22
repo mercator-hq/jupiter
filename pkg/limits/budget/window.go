@@ -23,9 +23,9 @@ import (
 //
 // RollingWindow is thread-safe using sync.RWMutex.
 type RollingWindow struct {
-	window     time.Duration  // Total window duration
-	bucketSize time.Duration  // Granularity of each bucket
-	buckets    []bucket       // Circular buffer of buckets
+	window     time.Duration // Total window duration
+	bucketSize time.Duration // Granularity of each bucket
+	buckets    []bucket      // Circular buffer of buckets
 	mu         sync.RWMutex
 }
 

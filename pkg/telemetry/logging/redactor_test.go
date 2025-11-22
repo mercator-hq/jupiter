@@ -364,7 +364,7 @@ func TestRedactEmail(t *testing.T) {
 		{"user@example.com", "u***@example.com"},
 		{"a@example.com", "a***@example.com"},
 		{"john.doe@company.com", "j***@company.com"},
-		{"invalid-email", "invalid-email"}, // Not an email
+		{"invalid-email", "invalid-email"},  // Not an email
 		{"@example.com", "***@example.com"}, // Empty username
 	}
 

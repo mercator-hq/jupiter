@@ -44,11 +44,11 @@ type EvidenceRecord struct {
 	PIITypes        []string `json:"pii_types"`        // PII types found
 
 	// Policy decisions
-	PolicyDecision    string               `json:"policy_decision"`     // "allow", "block", "transform"
-	MatchedRules      []MatchedRuleRecord  `json:"matched_rules"`       // Rules that matched
-	BlockReason       string               `json:"block_reason"`        // If blocked, why
-	PolicyVersion     string               `json:"policy_version"`      // Git commit hash (deprecated, use PolicyVersionDetails)
-	PolicyVersionInfo *PolicyVersionInfo   `json:"policy_version_info"` // Detailed policy version information (Git mode)
+	PolicyDecision    string              `json:"policy_decision"`     // "allow", "block", "transform"
+	MatchedRules      []MatchedRuleRecord `json:"matched_rules"`       // Rules that matched
+	BlockReason       string              `json:"block_reason"`        // If blocked, why
+	PolicyVersion     string              `json:"policy_version"`      // Git commit hash (deprecated, use PolicyVersionDetails)
+	PolicyVersionInfo *PolicyVersionInfo  `json:"policy_version_info"` // Detailed policy version information (Git mode)
 
 	// Response metadata
 	ResponseHash   string `json:"response_hash"`   // SHA-256 of response body
@@ -121,13 +121,13 @@ type Query struct {
 	EndTime   *time.Time `json:"end_time,omitempty"`   // Inclusive end time
 
 	// Filters
-	UserID         string `json:"user_id,omitempty"`          // Filter by user ID
-	APIKey         string `json:"api_key,omitempty"`          // Filter by API key
-	Provider       string `json:"provider,omitempty"`         // Filter by provider
-	Model          string `json:"model,omitempty"`            // Filter by model
-	PolicyID       string `json:"policy_id,omitempty"`        // Filter by policy ID
-	RuleID         string `json:"rule_id,omitempty"`          // Filter by rule ID
-	PolicyDecision string `json:"policy_decision,omitempty"`  // "allow", "block", etc.
+	UserID         string `json:"user_id,omitempty"`         // Filter by user ID
+	APIKey         string `json:"api_key,omitempty"`         // Filter by API key
+	Provider       string `json:"provider,omitempty"`        // Filter by provider
+	Model          string `json:"model,omitempty"`           // Filter by model
+	PolicyID       string `json:"policy_id,omitempty"`       // Filter by policy ID
+	RuleID         string `json:"rule_id,omitempty"`         // Filter by rule ID
+	PolicyDecision string `json:"policy_decision,omitempty"` // "allow", "block", etc.
 
 	// Thresholds
 	MinCost   *float64 `json:"min_cost,omitempty"`   // Minimum cost

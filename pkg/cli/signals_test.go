@@ -72,7 +72,7 @@ func TestWaitForShutdownReceivesSignal(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 		// Send signal to ourselves
 		p, _ := os.FindProcess(os.Getpid())
-		p.Signal(syscall.SIGTERM)
+		_ = p.Signal(syscall.SIGTERM)
 	}()
 
 	// Wait for signal with timeout

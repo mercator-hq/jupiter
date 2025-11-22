@@ -251,13 +251,13 @@ func TestCSVExporter_SpecialCharacters(t *testing.T) {
 
 	now := time.Now()
 	record := &evidence.EvidenceRecord{
-		ID:             "special-chars",
-		RequestID:      "req-special",
-		RequestTime:    now,
-		SystemPrompt:   "Prompt with \"quotes\" and commas, newlines\nand tabs\there",
-		UserPrompt:     "Question with special chars: <>&\"'",
+		ID:              "special-chars",
+		RequestID:       "req-special",
+		RequestTime:     now,
+		SystemPrompt:    "Prompt with \"quotes\" and commas, newlines\nand tabs\there",
+		UserPrompt:      "Question with special chars: <>&\"'",
 		ResponseContent: "Response with\nnewlines\nand \"quotes\"",
-		BlockReason:    "Contains: commas, quotes\", and\nnewlines",
+		BlockReason:     "Contains: commas, quotes\", and\nnewlines",
 	}
 
 	err := exporter.Export(context.Background(), []*evidence.EvidenceRecord{record}, &buf)

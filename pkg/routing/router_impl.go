@@ -303,7 +303,6 @@ func (r *DefaultRouter) Close() error {
 	return nil
 }
 
-
 // getProviderNames extracts provider names from a provider list.
 func getProviderNames(providerList []providers.Provider) []string {
 	names := make([]string, 0, len(providerList))

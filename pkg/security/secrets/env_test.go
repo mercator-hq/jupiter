@@ -34,31 +34,31 @@ func TestEnvProvider_GetSecret_NotFound(t *testing.T) {
 
 func TestEnvProvider_SecretNameConversion(t *testing.T) {
 	tests := []struct {
-		name         string
-		secretName   string
-		envVarName   string
-		envVarValue  string
+		name          string
+		secretName    string
+		envVarName    string
+		envVarValue   string
 		expectedValue string
 	}{
 		{
-			name:         "simple name",
-			secretName:   "api-key",
-			envVarName:   "MERCATOR_SECRET_API_KEY",
-			envVarValue:  "value1",
+			name:          "simple name",
+			secretName:    "api-key",
+			envVarName:    "MERCATOR_SECRET_API_KEY",
+			envVarValue:   "value1",
 			expectedValue: "value1",
 		},
 		{
-			name:         "complex name with multiple hyphens",
-			secretName:   "openai-api-key",
-			envVarName:   "MERCATOR_SECRET_OPENAI_API_KEY",
-			envVarValue:  "value2",
+			name:          "complex name with multiple hyphens",
+			secretName:    "openai-api-key",
+			envVarName:    "MERCATOR_SECRET_OPENAI_API_KEY",
+			envVarValue:   "value2",
 			expectedValue: "value2",
 		},
 		{
-			name:         "name with underscores",
-			secretName:   "my_secret_key",
-			envVarName:   "MERCATOR_SECRET_MY_SECRET_KEY",
-			envVarValue:  "value3",
+			name:          "name with underscores",
+			secretName:    "my_secret_key",
+			envVarName:    "MERCATOR_SECRET_MY_SECRET_KEY",
+			envVarValue:   "value3",
 			expectedValue: "value3",
 		},
 	}

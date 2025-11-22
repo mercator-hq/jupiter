@@ -114,11 +114,11 @@ func (ms *MockServer) handler(w http.ResponseWriter, r *http.Request) {
 	if response.Body != nil {
 		switch v := response.Body.(type) {
 		case string:
-			w.Write([]byte(v))
+			_, _ = w.Write([]byte(v)) // Write to response, ignore error
 		case []byte:
-			w.Write(v)
+			_, _ = w.Write(v) // Write to response, ignore error
 		default:
-			json.NewEncoder(w).Encode(response.Body)
+			_ = json.NewEncoder(w).Encode(response.Body) // Write to response, ignore error
 		}
 	}
 }
@@ -231,7 +231,7 @@ func MockAnthropicStreamEvent(eventType string, data interface{}) string {
 // MockAnthropicContentBlockDelta creates a content block delta event.
 func MockAnthropicContentBlockDelta(text string) string {
 	data := map[string]interface{}{
-		"type": "content_block_delta",
+		"type":  "content_block_delta",
 		"index": 0,
 		"delta": map[string]interface{}{
 			"type": "text_delta",

@@ -128,7 +128,7 @@ func TestSavePublicKey(t *testing.T) {
 
 	block, _ := pem.Decode(data)
 	if block == nil {
-		t.Error("Saved public key is not valid PEM")
+		t.Fatal("Saved public key is not valid PEM")
 	}
 	if block.Type != "PUBLIC KEY" {
 		t.Errorf("PEM block type = %q, want %q", block.Type, "PUBLIC KEY")
@@ -177,7 +177,7 @@ func TestSavePrivateKey(t *testing.T) {
 
 	block, _ := pem.Decode(data)
 	if block == nil {
-		t.Error("Saved private key is not valid PEM")
+		t.Fatal("Saved private key is not valid PEM")
 	}
 	if block.Type != "PRIVATE KEY" {
 		t.Errorf("PEM block type = %q, want %q", block.Type, "PRIVATE KEY")

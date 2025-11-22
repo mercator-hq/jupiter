@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"mercator-hq/jupiter/pkg/config"
-		"mercator-hq/jupiter/pkg/proxy/types"
+	"mercator-hq/jupiter/pkg/proxy/types"
 )
 
 // Analyzer analyzes conversation history for context window management

@@ -85,7 +85,7 @@ func TestNew(t *testing.T) {
 			}
 
 			if logger != nil {
-				defer logger.Shutdown()
+				defer func() { _ = logger.Shutdown() }()
 			}
 		})
 	}
@@ -161,7 +161,7 @@ func TestLogger_LevelFiltering(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create logger: %v", err)
 			}
-			defer logger.Shutdown()
+   defer func() { _ = logger.Shutdown() }()
 
 			testMsg := "test message"
 			tt.logMethod(logger, testMsg)
@@ -192,7 +192,7 @@ func TestLogger_StructuredFields(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+ defer func() { _ = logger.Shutdown() }()
 
 	logger.Info("test message",
 		"string_field", "value",
@@ -236,7 +236,7 @@ func TestLogger_With(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+ defer func() { _ = logger.Shutdown() }()
 
 	// Create logger with additional fields
 	childLogger := logger.With("request_id", "req-123", "user", "testuser")
@@ -266,7 +266,7 @@ func TestLogger_WithContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+ defer func() { _ = logger.Shutdown() }()
 
 	// Create context with fields
 	ctx := context.Background()
@@ -302,7 +302,7 @@ func TestLogger_PIIRedaction(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+ defer func() { _ = logger.Shutdown() }()
 
 	// Log message with PII
 	logger.Info("User login",
@@ -340,7 +340,7 @@ func TestLogger_ContextMethods(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+ defer func() { _ = logger.Shutdown() }()
 
 	ctx := WithRequestID(context.Background(), "req-789")
 
@@ -408,7 +408,7 @@ func TestLogger_Formats(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create logger: %v", err)
 			}
-			defer logger.Shutdown()
+   defer func() { _ = logger.Shutdown() }()
 
 			logger.Info("test message", "key", "value")
 			time.Sleep(10 * time.Millisecond)
@@ -439,7 +439,7 @@ func TestLogger_AddSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Shutdown()
+ defer func() { _ = logger.Shutdown() }()
 
 	logger.Info("test message")
 	time.Sleep(10 * time.Millisecond)

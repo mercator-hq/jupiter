@@ -307,8 +307,8 @@ func TestValidateLimits_CircularDowngrade(t *testing.T) {
 		{
 			name: "valid chain",
 			downgrades: map[string]string{
-				"gpt-4":        "gpt-4-turbo",
-				"gpt-4-turbo":  "gpt-3.5-turbo",
+				"gpt-4":         "gpt-4-turbo",
+				"gpt-4-turbo":   "gpt-3.5-turbo",
 				"claude-3-opus": "claude-3-sonnet",
 			},
 			wantErr: false,

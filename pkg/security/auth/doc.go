@@ -49,14 +49,14 @@ Inside your HTTP handler, retrieve the authenticated user's information:
 
 The middleware supports multiple sources for API keys:
 
-1. Authorization header with Bearer scheme:
-   Authorization: Bearer sk-test-1234567890abcdef
+ 1. Authorization header with Bearer scheme:
+    Authorization: Bearer sk-test-1234567890abcdef
 
-2. Custom header:
-   X-API-Key: sk-test-1234567890abcdef
+ 2. Custom header:
+    X-API-Key: sk-test-1234567890abcdef
 
-3. Query parameter:
-   ?api_key=sk-test-1234567890abcdef
+ 3. Query parameter:
+    ?api_key=sk-test-1234567890abcdef
 
 The middleware tries sources in order and uses the first valid key found.
 

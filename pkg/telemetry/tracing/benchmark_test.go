@@ -21,7 +21,7 @@ func BenchmarkTracer_Start_Disabled(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -51,7 +51,7 @@ func BenchmarkTracer_Start_Enabled(b *testing.B) {
 	if err != nil {
 		b.Skip("OTLP endpoint not available, skipping benchmark")
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -74,7 +74,7 @@ func BenchmarkTracer_Start_WithAttributes(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -104,7 +104,7 @@ func BenchmarkTracer_NestedSpans(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -113,7 +113,7 @@ func BenchmarkTracer_NestedSpans(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		ctx, parentSpan := tracer.Start(ctx, "parent-operation")
-		ctx, childSpan := tracer.Start(ctx, "child-operation")
+		_, childSpan := tracer.Start(ctx, "child-operation")
 		childSpan.End()
 		parentSpan.End()
 	}
@@ -129,7 +129,7 @@ func BenchmarkSetProviderAttributes(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -152,7 +152,7 @@ func BenchmarkSetRequestAttributes(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -175,7 +175,7 @@ func BenchmarkSetCostWithTokens(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -198,7 +198,7 @@ func BenchmarkAttributeBuilder(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -241,7 +241,7 @@ func BenchmarkInject(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -304,7 +304,7 @@ func BenchmarkSpanFromContext(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -327,7 +327,7 @@ func BenchmarkTraceID(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -350,7 +350,7 @@ func BenchmarkSetError(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -386,7 +386,7 @@ func BenchmarkFullRequestTrace(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	headers := http.Header{}
 	headers.Set("traceparent", "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01")

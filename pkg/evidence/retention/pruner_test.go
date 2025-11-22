@@ -108,7 +108,7 @@ func TestPruner_RetentionDisabled(t *testing.T) {
 		Model:       "gpt-4",
 	}
 
-	store.Store(ctx, record)
+	_ = store.Store(ctx, record)
 
 	// Run pruner
 	deleted, err := pruner.Prune(ctx)
@@ -162,7 +162,7 @@ func TestPruner_ArchiveBeforeDelete(t *testing.T) {
 	}
 
 	for _, record := range records {
-		store.Store(ctx, record)
+		_ = store.Store(ctx, record)
 	}
 
 	// Run pruner
@@ -228,7 +228,7 @@ func TestPruner_NoRecordsToDelete(t *testing.T) {
 	}
 
 	for _, record := range records {
-		store.Store(ctx, record)
+		_ = store.Store(ctx, record)
 	}
 
 	// Run pruner
@@ -323,7 +323,7 @@ func TestPruner_CustomRetentionPeriod(t *testing.T) {
 				Model:       "gpt-4",
 			}
 
-			store.Store(ctx, record)
+			_ = store.Store(ctx, record)
 
 			// Run pruner
 			deleted, err := pruner.Prune(ctx)
@@ -368,7 +368,7 @@ func TestPruner_ArchiveDirectoryCreation(t *testing.T) {
 		Model:       "gpt-4",
 	}
 
-	store.Store(ctx, record)
+	_ = store.Store(ctx, record)
 
 	// Run pruner (should create directory)
 	_, err := pruner.Prune(ctx)
@@ -406,7 +406,7 @@ func TestPruner_NoArchiveWhenNoRecords(t *testing.T) {
 		Model:       "gpt-4",
 	}
 
-	store.Store(ctx, record)
+	_ = store.Store(ctx, record)
 
 	// Run pruner
 	_, err := pruner.Prune(ctx)
@@ -447,7 +447,7 @@ func BenchmarkPruner_Prune(b *testing.B) {
 			Model:       "gpt-4",
 		}
 
-		store.Store(ctx, record)
+		_ = store.Store(ctx, record)
 	}
 
 	b.ResetTimer()
@@ -461,7 +461,7 @@ func BenchmarkPruner_Prune(b *testing.B) {
 				RequestTime: now.AddDate(0, 0, -10),
 				Model:       "gpt-4",
 			}
-			store.Store(ctx, record)
+			_ = store.Store(ctx, record)
 		}
 		b.StartTimer()
 
@@ -566,8 +566,8 @@ func TestPruner_PruneByCount(t *testing.T) {
 func TestPruner_BothAgeAndCount(t *testing.T) {
 	store := storage.NewMemoryStorage()
 	config := DefaultConfig()
-	config.RetentionDays = 90  // Delete >90 days old
-	config.MaxRecords = 80     // Keep max 80 records
+	config.RetentionDays = 90 // Delete >90 days old
+	config.MaxRecords = 80    // Keep max 80 records
 	config.ArchiveBeforeDelete = false
 
 	pruner := NewPruner(store, config)
@@ -664,7 +664,7 @@ func BenchmarkPruner_PruneWithArchive(b *testing.B) {
 				RequestTime: now.AddDate(0, 0, -10),
 				Model:       "gpt-4",
 			}
-			store.Store(ctx, record)
+			_ = store.Store(ctx, record)
 		}
 		b.StartTimer()
 

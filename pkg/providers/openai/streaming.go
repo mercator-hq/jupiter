@@ -2,7 +2,6 @@ package openai
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -127,34 +126,4 @@ func (s *streamReader) Close() error {
 
 	s.closed = true
 	return s.resp.Close()
-}
-
-// readSSEData reads a complete SSE data event (handles multi-line data).
-func readSSEData(scanner *bufio.Scanner) (string, error) {
-	var buf bytes.Buffer
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		// Empty line marks end of event
-		if line == "" {
-			break
-		}
-
-		// Parse SSE field
-		if strings.HasPrefix(line, "data: ") {
-			data := strings.TrimPrefix(line, "data: ")
-			if buf.Len() > 0 {
-				buf.WriteString("\n")
-			}
-			buf.WriteString(data)
-		}
-		// Ignore other SSE fields (event, id, retry)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
 }

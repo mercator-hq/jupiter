@@ -278,7 +278,7 @@ func TestStickyCache_ConcurrentAccess(t *testing.T) {
 		go func(id int) {
 			defer wg.Done()
 			for j := 0; j < opsPerGoroutine; j++ {
-				key := string(rune('A' + (id%26)))
+				key := string(rune('A' + (id % 26)))
 				cache.Set(key, "provider")
 			}
 		}(i)
@@ -290,7 +290,7 @@ func TestStickyCache_ConcurrentAccess(t *testing.T) {
 		go func(id int) {
 			defer wg.Done()
 			for j := 0; j < opsPerGoroutine; j++ {
-				key := string(rune('A' + (id%26)))
+				key := string(rune('A' + (id % 26)))
 				cache.Get(key)
 			}
 		}(i)

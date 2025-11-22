@@ -117,12 +117,12 @@ func TestMatchSimple_FieldConditions(t *testing.T) {
 // TestMatchSimple_PatternConditions tests pattern matching (regex, substring)
 func TestMatchSimple_PatternConditions(t *testing.T) {
 	tests := []struct {
-		name          string
-		operator      ast.Operator
-		pattern       string
-		content       string
-		wantMatch     bool
-		wantError     bool
+		name      string
+		operator  ast.Operator
+		pattern   string
+		content   string
+		wantMatch bool
+		wantError bool
 	}{
 		{
 			name:      "contains substring",
@@ -400,9 +400,9 @@ func TestMatchFunction_HasPII(t *testing.T) {
 // TestMatchFunction_InBusinessHours tests business hours check
 func TestMatchFunction_InBusinessHours(t *testing.T) {
 	tests := []struct {
-		name       string
-		testTime   time.Time
-		wantMatch  bool
+		name      string
+		testTime  time.Time
+		wantMatch bool
 	}{
 		{
 			name:      "weekday during business hours",

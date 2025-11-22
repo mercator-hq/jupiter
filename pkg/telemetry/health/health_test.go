@@ -161,7 +161,7 @@ func TestCheckLiveness(t *testing.T) {
 		t.Error("expected non-zero timestamp")
 	}
 
-	if status.Checks != nil && len(status.Checks) > 0 {
+	if len(status.Checks) > 0 {
 		t.Error("expected no checks in liveness response")
 	}
 }

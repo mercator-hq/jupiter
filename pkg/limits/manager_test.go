@@ -93,7 +93,7 @@ func TestManager_CheckLimits_RateLimitExceeded(t *testing.T) {
 
 	// Exhaust rate limit (burst capacity is 2x, so 4 requests)
 	for i := 0; i < 4; i++ {
-		manager.CheckLimits(ctx, "test-key", 0, 0, "gpt-4")
+		_, _ = manager.CheckLimits(ctx, "test-key", 0, 0, "gpt-4")
 	}
 
 	// Next request should be blocked
@@ -128,7 +128,7 @@ func TestManager_CheckLimits_BudgetExceeded(t *testing.T) {
 	ctx := context.Background()
 
 	// First record usage that exceeds budget
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       15.00,
@@ -164,7 +164,7 @@ func TestManager_CheckLimits_AlertThreshold(t *testing.T) {
 	ctx := context.Background()
 
 	// Record usage to reach threshold
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       8.50, // 85% of budget
@@ -348,7 +348,7 @@ func TestManager_Downgrade(t *testing.T) {
 	ctx := context.Background()
 
 	// Record usage that exceeds budget
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       2.00, // Exceeds daily limit of 1.00

@@ -47,13 +47,13 @@ const (
 	AttrTokensTotal      = "mercator.tokens.total"
 
 	// Cost attributes
-	AttrCost          = "mercator.cost.total"
-	AttrCostCurrency  = "mercator.cost.currency"
-	AttrCostPerToken  = "mercator.cost.per_token"
+	AttrCost         = "mercator.cost.total"
+	AttrCostCurrency = "mercator.cost.currency"
+	AttrCostPerToken = "mercator.cost.per_token"
 
 	// Policy attributes
-	AttrPolicyID    = "mercator.policy.id"
-	AttrPolicyRule  = "mercator.policy.rule"
+	AttrPolicyID     = "mercator.policy.id"
+	AttrPolicyRule   = "mercator.policy.rule"
 	AttrPolicyAction = "mercator.policy.action"
 
 	// Cache attributes

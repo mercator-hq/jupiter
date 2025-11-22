@@ -151,7 +151,7 @@ func TestTracer_Start(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -175,7 +175,7 @@ func TestTracer_Start(t *testing.T) {
 
 	// Test nested spans
 	ctx, parentSpan := tracer.Start(ctx, "parent-operation")
-	ctx, childSpan := tracer.Start(ctx, "child-operation")
+	_, childSpan := tracer.Start(ctx, "child-operation")
 	childSpan.End()
 	parentSpan.End()
 }
@@ -242,7 +242,7 @@ func TestSpanFromContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -270,7 +270,7 @@ func TestContextWithSpan(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 	_, span := tracer.Start(ctx, "test-operation")
@@ -295,7 +295,7 @@ func TestSpanContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -309,7 +309,7 @@ func TestSpanContext(t *testing.T) {
 	ctx, span := tracer.Start(ctx, "test-operation")
 	defer span.End()
 
-	sc = SpanContext(ctx)
+	_ = SpanContext(ctx)
 	// For noop tracer, span context may or may not be valid
 	// Just verify it doesn't panic
 }
@@ -323,7 +323,7 @@ func TestTraceID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -337,7 +337,7 @@ func TestTraceID(t *testing.T) {
 	ctx, span := tracer.Start(ctx, "test-operation")
 	defer span.End()
 
-	traceID = TraceID(ctx)
+	_ = TraceID(ctx)
 	// For noop tracer, trace ID will be empty
 }
 
@@ -350,7 +350,7 @@ func TestSpanID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -364,7 +364,7 @@ func TestSpanID(t *testing.T) {
 	ctx, span := tracer.Start(ctx, "test-operation")
 	defer span.End()
 
-	spanID = SpanID(ctx)
+	_ = SpanID(ctx)
 	// For noop tracer, span ID will be empty
 }
 
@@ -377,7 +377,7 @@ func TestIsSampled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 
@@ -404,7 +404,7 @@ func TestSetError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -428,7 +428,7 @@ func TestSetStatus(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -452,7 +452,7 @@ func TestTracer_SpanAttributes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -478,7 +478,7 @@ func TestTracer_SpanEvents(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -505,7 +505,7 @@ func TestTracer_RecordError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()
@@ -526,7 +526,7 @@ func TestTracer_SetStatus(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create tracer: %v", err)
 	}
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	_, span := tracer.Start(context.Background(), "test-operation")
 	defer span.End()

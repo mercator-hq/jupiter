@@ -27,10 +27,10 @@ import (
 // SlidingWindow is thread-safe using sync.RWMutex. Reads are lock-free
 // when possible to maximize throughput under read-heavy workloads.
 type SlidingWindow struct {
-	window     time.Duration  // Window duration (e.g., 1 minute)
-	bucketSize time.Duration  // Granularity of each bucket (e.g., 1 second)
-	buckets    []bucket       // Circular buffer of buckets
-	head       int            // Current write position
+	window     time.Duration // Window duration (e.g., 1 minute)
+	bucketSize time.Duration // Granularity of each bucket (e.g., 1 second)
+	buckets    []bucket      // Circular buffer of buckets
+	head       int           // Current write position
 	mu         sync.RWMutex
 }
 

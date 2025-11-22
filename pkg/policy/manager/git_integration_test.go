@@ -57,7 +57,7 @@ rules:
 
 	// Commit initial policy
 	worktree, _ := repo.Worktree()
-	worktree.Add("policy.yaml")
+	_, _ = worktree.Add("policy.yaml")
 	firstCommit, err := worktree.Commit("Initial policy", &gogit.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Test Author",
@@ -186,7 +186,7 @@ rules:
 		}
 
 		// Commit update
-		worktree.Add("policy.yaml")
+		_, _ = worktree.Add("policy.yaml")
 		secondCommit, err := worktree.Commit("Update policy", &gogit.CommitOptions{
 			Author: &object.Signature{
 				Name:  "Test Author",
@@ -313,7 +313,7 @@ rules:
 
 	// Commit valid policy
 	worktree, _ := repo.Worktree()
-	worktree.Add("policy.yaml")
+	_, _ = worktree.Add("policy.yaml")
 	validCommit, err := worktree.Commit("Valid policy", &gogit.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Test Author",
@@ -397,7 +397,7 @@ rules:
 	}
 
 	// Commit invalid policy
-	worktree.Add("policy.yaml")
+	_, _ = worktree.Add("policy.yaml")
 	_, err = worktree.Commit("Invalid policy", &gogit.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Test Author",
@@ -484,7 +484,7 @@ rules:
 
 	// Commit initial policy
 	worktree, _ := repo.Worktree()
-	worktree.Add("policy.yaml")
+	_, _ = worktree.Add("policy.yaml")
 	_, err = worktree.Commit("Initial policy", &gogit.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Test Author",
@@ -580,7 +580,7 @@ rules:
 	}
 
 	// Commit update
-	worktree.Add("policy.yaml")
+	_, _ = worktree.Add("policy.yaml")
 	_, err = worktree.Commit("Update policy", &gogit.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Test Author",

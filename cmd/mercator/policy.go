@@ -133,7 +133,7 @@ func init() {
 
 	// Flags for rollback command
 	policyRollbackCmd.Flags().StringVar(&policyFlags.to, "to", "", "target commit SHA")
-	policyRollbackCmd.MarkFlagRequired("to")
+	_ = policyRollbackCmd.MarkFlagRequired("to")
 }
 
 func showPolicyVersion(cmd *cobra.Command, args []string) error {

@@ -295,9 +295,9 @@ func TestPolicyLoader_IsDirectory(t *testing.T) {
 	loader := NewPolicyLoader(DefaultLoaderConfig(), parser.NewParser())
 
 	tests := []struct {
-		name  string
-		path  string
-		isDir bool
+		name   string
+		path   string
+		isDir  bool
 		hasErr bool
 	}{
 		{

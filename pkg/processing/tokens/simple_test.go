@@ -19,12 +19,12 @@ func TestSimpleEstimator_EstimateText(t *testing.T) {
 	estimator := NewSimpleEstimator(cfg)
 
 	tests := []struct {
-		name          string
-		text          string
-		model         string
-		expectedMin   int
-		expectedMax   int
-		expectError   bool
+		name        string
+		text        string
+		model       string
+		expectedMin int
+		expectedMax int
+		expectError bool
 	}{
 		{
 			name:        "empty text",

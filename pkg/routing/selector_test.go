@@ -3,8 +3,8 @@ package routing
 import (
 	"testing"
 
-	"mercator-hq/jupiter/pkg/providers"
 	mockrouting "mercator-hq/jupiter/internal/routing"
+	"mercator-hq/jupiter/pkg/providers"
 )
 
 func TestNewProviderSelector(t *testing.T) {
@@ -134,11 +134,11 @@ func TestProviderSelector_FilterByModel(t *testing.T) {
 	ollama := mockrouting.NewMockProvider("ollama")
 
 	modelMapping := map[string][]string{
-		"gpt-4":          {"openai"},
-		"gpt-3.5-turbo":  {"openai"},
-		"claude-3-opus":  {"anthropic"},
+		"gpt-4":           {"openai"},
+		"gpt-3.5-turbo":   {"openai"},
+		"claude-3-opus":   {"anthropic"},
 		"claude-3-sonnet": {"anthropic"},
-		"llama-3":        {"ollama"},
+		"llama-3":         {"ollama"},
 	}
 
 	tests := []struct {

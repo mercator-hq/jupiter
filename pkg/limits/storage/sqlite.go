@@ -18,18 +18,18 @@ import (
 // SQLiteBackend uses a write-ahead log (WAL) for better concurrent performance
 // and automatic checkpointing to balance write performance with durability.
 type SQLiteBackend struct {
-	db              *sql.DB
-	dbPath          string
+	db               *sql.DB
+	dbPath           string
 	snapshotInterval time.Duration
-	done            chan struct{}
-	mu              sync.RWMutex
-	closeOnce       sync.Once
+	done             chan struct{}
+	mu               sync.RWMutex
+	closeOnce        sync.Once
 
 	// preparedStatements contains pre-compiled SQL statements for performance
-	saveStmt   *sql.Stmt
-	loadStmt   *sql.Stmt
-	deleteStmt *sql.Stmt
-	listStmt   *sql.Stmt
+	saveStmt    *sql.Stmt
+	loadStmt    *sql.Stmt
+	deleteStmt  *sql.Stmt
+	listStmt    *sql.Stmt
 	cleanupStmt *sql.Stmt
 }
 

@@ -16,4 +16,7 @@ const (
 
 	// ModelKey stores the requested model name.
 	ModelKey contextKey = "model"
+
+	// DowngradedModelKey stores the downgraded model name when limit enforcement downgrades a request.
+	DowngradedModelKey contextKey = "downgraded_model"
 )

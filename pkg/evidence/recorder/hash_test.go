@@ -150,11 +150,11 @@ func TestHashContent_MaxHashSizeConstant(t *testing.T) {
 // BenchmarkHashContent benchmarks hashing performance
 func BenchmarkHashContent(b *testing.B) {
 	sizes := []int{
-		1024,              // 1KB
-		10 * 1024,         // 10KB
-		100 * 1024,        // 100KB
-		MaxHashSize,       // 1MB
-		MaxHashSize * 2,   // 2MB (tests truncation)
+		1024,            // 1KB
+		10 * 1024,       // 10KB
+		100 * 1024,      // 100KB
+		MaxHashSize,     // 1MB
+		MaxHashSize * 2, // 2MB (tests truncation)
 	}
 
 	for _, size := range sizes {

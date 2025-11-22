@@ -277,7 +277,9 @@ func TestWriteErrorResponse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 
-			WriteErrorResponse(w, tt.err)
+			if err := WriteErrorResponse(w, tt.err); err != nil {
+				t.Fatalf("WriteErrorResponse failed: %v", err)
+			}
 
 			if w.Code != tt.wantStatus {
 				t.Errorf("Status code = %v, want %v", w.Code, tt.wantStatus)

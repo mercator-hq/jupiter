@@ -84,8 +84,8 @@ type AnthropicStreamEvent struct {
 	// For content_block_delta event
 	Delta *ContentBlockDelta `json:"delta,omitempty"`
 
-	// For message_delta event
-	Delta2 *MessageDelta   `json:"delta,omitempty"`
+	// For message_delta event (uses same JSON field "delta" but different type)
+	Delta2 *MessageDelta   `json:"-"` // Not directly unmarshaled; handled in UnmarshalJSON
 	Usage  *AnthropicUsage `json:"usage,omitempty"`
 }
 
@@ -99,6 +99,43 @@ type ContentBlockDelta struct {
 type MessageDelta struct {
 	StopReason   string `json:"stop_reason,omitempty"`
 	StopSequence string `json:"stop_sequence,omitempty"`
+}
+
+// UnmarshalJSON provides custom unmarshaling for AnthropicStreamEvent to handle
+// the "delta" field which has different types based on the event type.
+func (e *AnthropicStreamEvent) UnmarshalJSON(data []byte) error {
+	// First, unmarshal into a temporary struct to get the type and other fields
+	type Alias AnthropicStreamEvent
+	aux := &struct {
+		RawDelta json.RawMessage `json:"delta,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(e),
+	}
+
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	// Now unmarshal the delta field based on event type
+	if len(aux.RawDelta) > 0 {
+		switch e.Type {
+		case "content_block_delta":
+			var delta ContentBlockDelta
+			if err := json.Unmarshal(aux.RawDelta, &delta); err != nil {
+				return err
+			}
+			e.Delta = &delta
+		case "message_delta":
+			var delta MessageDelta
+			if err := json.Unmarshal(aux.RawDelta, &delta); err != nil {
+				return err
+			}
+			e.Delta2 = &delta
+		}
+	}
+
+	return nil
 }
 
 // Transformation functions

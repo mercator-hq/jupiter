@@ -237,4 +237,3 @@ func TestValidateCertificateChain(t *testing.T) {
 		})
 	}
 }
-

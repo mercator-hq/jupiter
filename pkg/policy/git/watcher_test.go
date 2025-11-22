@@ -222,7 +222,7 @@ func TestWatcher_GetLastCommitSHA(t *testing.T) {
 	if err := watcher.Start(ctx); err != nil {
 		t.Fatalf("failed to start watcher: %v", err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }() // Intentionally ignoring error in test cleanup
 
 	sha := watcher.GetLastCommitSHA()
 	if sha == "" {
@@ -278,7 +278,7 @@ func TestWatcher_GetMetrics(t *testing.T) {
 	if err := watcher.Start(ctx); err != nil {
 		t.Fatalf("failed to start watcher: %v", err)
 	}
-	defer watcher.Stop()
+	defer func() { _ = watcher.Stop() }() // Intentionally ignoring error in test cleanup
 
 	// Let it poll a few times
 	time.Sleep(400 * time.Millisecond)

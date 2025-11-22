@@ -41,8 +41,8 @@ type Manager struct {
 	storage storage.Backend
 
 	// Configuration
-	rateLimitConfigs map[string]ratelimit.Config
-	budgetConfigs    map[string]budget.Config
+	rateLimitConfigs  map[string]ratelimit.Config
+	budgetConfigs     map[string]budget.Config
 	enforcementConfig enforcement.Config
 
 	mu sync.RWMutex
@@ -376,10 +376,10 @@ func (m *Manager) persistState(ctx context.Context, identifier string) error {
 	// Build state from current limiters/trackers
 	// This is a simplified version - full implementation would serialize all state
 	state := &storage.LimitState{
-		Identifier:  identifier,
-		Dimension:   string(DimensionAPIKey),
-		RateLimit:   nil, // TODO: Serialize rate limit state
-		Budget:      nil, // TODO: Serialize budget state
+		Identifier: identifier,
+		Dimension:  string(DimensionAPIKey),
+		RateLimit:  nil, // TODO: Serialize rate limit state
+		Budget:     nil, // TODO: Serialize budget state
 	}
 
 	return m.storage.Save(ctx, state)

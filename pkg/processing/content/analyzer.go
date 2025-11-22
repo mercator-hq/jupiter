@@ -14,7 +14,7 @@ type Analyzer struct {
 	config *config.ContentConfig
 
 	// Compiled regex patterns for performance
-	piiPatterns     map[string]*regexp.Regexp
+	piiPatterns       map[string]*regexp.Regexp
 	injectionPatterns []*regexp.Regexp
 
 	// mu protects the analyzer for concurrent access

@@ -92,40 +92,40 @@ func TestValidateTraceParent(t *testing.T) {
 // TestParseTraceParent tests traceparent header parsing
 func TestParseTraceParent(t *testing.T) {
 	tests := []struct {
-		name          string
-		traceparent   string
-		wantVersion   string
-		wantTraceID   string
-		wantParentID  string
-		wantFlags     string
-		wantValid     bool
+		name         string
+		traceparent  string
+		wantVersion  string
+		wantTraceID  string
+		wantParentID string
+		wantFlags    string
+		wantValid    bool
 	}{
 		{
-			name:          "valid traceparent",
-			traceparent:   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
-			wantVersion:   "00",
-			wantTraceID:   "4bf92f3577b34da6a3ce929d0e0e4736",
-			wantParentID:  "00f067aa0ba902b7",
-			wantFlags:     "01",
-			wantValid:     true,
+			name:         "valid traceparent",
+			traceparent:  "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+			wantVersion:  "00",
+			wantTraceID:  "4bf92f3577b34da6a3ce929d0e0e4736",
+			wantParentID: "00f067aa0ba902b7",
+			wantFlags:    "01",
+			wantValid:    true,
 		},
 		{
-			name:          "valid traceparent - not sampled",
-			traceparent:   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00",
-			wantVersion:   "00",
-			wantTraceID:   "4bf92f3577b34da6a3ce929d0e0e4736",
-			wantParentID:  "00f067aa0ba902b7",
-			wantFlags:     "00",
-			wantValid:     true,
+			name:         "valid traceparent - not sampled",
+			traceparent:  "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00",
+			wantVersion:  "00",
+			wantTraceID:  "4bf92f3577b34da6a3ce929d0e0e4736",
+			wantParentID: "00f067aa0ba902b7",
+			wantFlags:    "00",
+			wantValid:    true,
 		},
 		{
-			name:          "invalid traceparent",
-			traceparent:   "invalid",
-			wantVersion:   "",
-			wantTraceID:   "",
-			wantParentID:  "",
-			wantFlags:     "",
-			wantValid:     false,
+			name:         "invalid traceparent",
+			traceparent:  "invalid",
+			wantVersion:  "",
+			wantTraceID:  "",
+			wantParentID: "",
+			wantFlags:    "",
+			wantValid:    false,
 		},
 	}
 
@@ -340,9 +340,9 @@ func TestInjectToMap(t *testing.T) {
 // TestPropagationDebugInfo tests debug info generation
 func TestPropagationDebugInfo(t *testing.T) {
 	tests := []struct {
-		name       string
+		name         string
 		setupHeaders func() http.Header
-		wantKeys   []string
+		wantKeys     []string
 	}{
 		{
 			name: "with valid traceparent",

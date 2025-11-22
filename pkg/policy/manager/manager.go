@@ -31,9 +31,9 @@ type DefaultPolicyManager struct {
 	gitWatcher *git.Watcher
 
 	// State management
-	mu              sync.RWMutex
-	lastLoadTime    time.Time
-	lastLoadError   error
+	mu               sync.RWMutex
+	lastLoadTime     time.Time
+	lastLoadError    error
 	lastGoodPolicies []*ast.Policy // For error recovery
 
 	// Watch management

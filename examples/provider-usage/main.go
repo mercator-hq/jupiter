@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"mercator-hq/jupiter/pkg/providers"
 	"mercator-hq/jupiter/pkg/providerfactory"
+	"mercator-hq/jupiter/pkg/providers"
 )
 
 func main() {

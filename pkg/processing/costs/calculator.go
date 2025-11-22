@@ -129,12 +129,12 @@ func (c *Calculator) GetModelPricing(model, provider string) (*ModelPricing, err
 	if providerPricing, ok := c.config.Pricing[provider]; ok {
 		if modelConfig, ok := providerPricing[model]; ok {
 			return &ModelPricing{
-				Model:                      model,
-				Provider:                   provider,
-				PromptCostPer1KTokens:      modelConfig.Prompt,
-				CompletionCostPer1KTokens:  modelConfig.Completion,
+				Model:                       model,
+				Provider:                    provider,
+				PromptCostPer1KTokens:       modelConfig.Prompt,
+				CompletionCostPer1KTokens:   modelConfig.Completion,
 				CachedPromptCostPer1KTokens: modelConfig.CachedPrompt,
-				Currency:                   "USD",
+				Currency:                    "USD",
 			}, nil
 		}
 
@@ -142,12 +142,12 @@ func (c *Calculator) GetModelPricing(model, provider string) (*ModelPricing, err
 		for modelPattern, modelConfig := range providerPricing {
 			if strings.HasPrefix(model, modelPattern) {
 				return &ModelPricing{
-					Model:                      model,
-					Provider:                   provider,
-					PromptCostPer1KTokens:      modelConfig.Prompt,
-					CompletionCostPer1KTokens:  modelConfig.Completion,
+					Model:                       model,
+					Provider:                    provider,
+					PromptCostPer1KTokens:       modelConfig.Prompt,
+					CompletionCostPer1KTokens:   modelConfig.Completion,
 					CachedPromptCostPer1KTokens: modelConfig.CachedPrompt,
-					Currency:                   "USD",
+					Currency:                    "USD",
 				}, nil
 			}
 		}

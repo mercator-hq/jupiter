@@ -813,7 +813,7 @@ func BenchmarkMemoryStorage_Query(b *testing.B) {
 			Model:       "gpt-4",
 			Provider:    "openai",
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	query := &evidence.Query{
@@ -841,7 +841,7 @@ func BenchmarkMemoryStorage_Count(b *testing.B) {
 			RequestTime: now,
 			Provider:    "openai",
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	query := &evidence.Query{
@@ -871,7 +871,7 @@ func BenchmarkMemoryStorage_Delete(b *testing.B) {
 				RequestTime: now,
 				Provider:    "openai",
 			}
-			storage.Store(ctx, record)
+			_ = storage.Store(ctx, record)
 		}
 		b.StartTimer()
 

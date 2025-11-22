@@ -6,7 +6,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	securityTLS "mercator-hq/jupiter/pkg/security/tls"
@@ -208,13 +207,13 @@ func printCertJSON(cert *x509.Certificate) error {
 			"dns": info.DNSNames,
 			"ip":  info.IPAddresses,
 		},
-		"key_usage":          getKeyUsages(cert.KeyUsage),
-		"ext_key_usage":      getExtKeyUsages(cert.ExtKeyUsage),
-		"signature_algorithm": info.SignatureAlgorithm,
+		"key_usage":            getKeyUsages(cert.KeyUsage),
+		"ext_key_usage":        getExtKeyUsages(cert.ExtKeyUsage),
+		"signature_algorithm":  info.SignatureAlgorithm,
 		"public_key_algorithm": info.PublicKeyAlgorithm,
-		"serial_number":       info.SerialNumber,
-		"version":             cert.Version,
-		"is_ca":               cert.IsCA,
+		"serial_number":        info.SerialNumber,
+		"version":              cert.Version,
+		"is_ca":                cert.IsCA,
 	}
 
 	encoder := json.NewEncoder(os.Stdout)
@@ -295,20 +294,4 @@ func getExtKeyUsage(usage x509.ExtKeyUsage) string {
 	default:
 		return fmt.Sprintf("Unknown (%d)", usage)
 	}
-}
-
-// Helper to safely get first element from string array
-func getFirstOrEmpty(arr []string) string {
-	if len(arr) > 0 {
-		return arr[0]
-	}
-	return ""
-}
-
-// Helper to format string array for display
-func formatStringArray(arr []string) string {
-	if len(arr) == 0 {
-		return "(none)"
-	}
-	return strings.Join(arr, ", ")
 }

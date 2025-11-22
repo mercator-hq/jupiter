@@ -90,8 +90,8 @@ func (p *Parser) Parse(path string) (*ast.Policy, error) {
 	if err != nil {
 		// Add context to errors
 		if errList, ok := err.(*mplErrors.ErrorList); ok {
-			for _, e := range errList.Errors {
-				mplErrors.AddContextToError(e)
+			for i, e := range errList.Errors {
+				errList.Errors[i] = mplErrors.AddContextToError(e)
 			}
 		}
 		return nil, err
@@ -134,8 +134,8 @@ func (p *Parser) ParseBytes(data []byte, sourcePath string) (*ast.Policy, error)
 	if err != nil {
 		// Add context to errors (won't work for in-memory data, but safe to call)
 		if errList, ok := err.(*mplErrors.ErrorList); ok {
-			for _, e := range errList.Errors {
-				mplErrors.AddContextToError(e)
+			for i, e := range errList.Errors {
+				errList.Errors[i] = mplErrors.AddContextToError(e)
 			}
 		}
 		return nil, err

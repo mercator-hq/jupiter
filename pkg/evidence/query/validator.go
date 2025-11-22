@@ -16,12 +16,12 @@ const (
 
 // ValidSortFields contains the fields that can be used for sorting.
 var ValidSortFields = map[string]bool{
-	"request_time":      true,
-	"recorded_time":     true,
-	"response_time":     true,
-	"actual_cost":       true,
-	"total_tokens":      true,
-	"provider_latency":  true,
+	"request_time":     true,
+	"recorded_time":    true,
+	"response_time":    true,
+	"actual_cost":      true,
+	"total_tokens":     true,
+	"provider_latency": true,
 }
 
 // ValidSortOrders contains the valid sort orders.

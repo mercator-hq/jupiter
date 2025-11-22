@@ -63,7 +63,7 @@ func TestCalculator_CalculateRequestCost(t *testing.T) {
 			},
 			model:       "gpt-4",
 			provider:    "openai",
-			expectedMin: 0.008,  // (100/1000 * 0.03) + (100/1000 * 0.06) = 0.003 + 0.006 = 0.009
+			expectedMin: 0.008, // (100/1000 * 0.03) + (100/1000 * 0.06) = 0.003 + 0.006 = 0.009
 			expectedMax: 0.010,
 		},
 		{
@@ -338,31 +338,31 @@ func TestCalculator_GetModelPricing(t *testing.T) {
 	calculator := NewCalculator(cfg)
 
 	tests := []struct {
-		name         string
-		model        string
-		provider     string
-		expectError  bool
+		name           string
+		model          string
+		provider       string
+		expectError    bool
 		expectedPrompt float64
 	}{
 		{
-			name:         "exact match",
-			model:        "gpt-4",
-			provider:     "openai",
-			expectError:  false,
+			name:           "exact match",
+			model:          "gpt-4",
+			provider:       "openai",
+			expectError:    false,
 			expectedPrompt: 0.03,
 		},
 		{
-			name:         "prefix match",
-			model:        "gpt-4-turbo",
-			provider:     "openai",
-			expectError:  false,
+			name:           "prefix match",
+			model:          "gpt-4-turbo",
+			provider:       "openai",
+			expectError:    false,
 			expectedPrompt: 0.03,
 		},
 		{
-			name:         "unknown uses default",
-			model:        "unknown",
-			provider:     "unknown",
-			expectError:  false,
+			name:           "unknown uses default",
+			model:          "unknown",
+			provider:       "unknown",
+			expectError:    false,
 			expectedPrompt: 0.001,
 		},
 	}
@@ -440,33 +440,33 @@ func TestCalculator_UpdatePricing(t *testing.T) {
 
 func TestCalculateTokenCost(t *testing.T) {
 	tests := []struct {
-		name        string
-		tokens      int
-		costPer1K   float64
+		name         string
+		tokens       int
+		costPer1K    float64
 		expectedCost float64
 	}{
 		{
-			name:        "zero tokens",
-			tokens:      0,
-			costPer1K:   0.03,
+			name:         "zero tokens",
+			tokens:       0,
+			costPer1K:    0.03,
 			expectedCost: 0.0,
 		},
 		{
-			name:        "1000 tokens",
-			tokens:      1000,
-			costPer1K:   0.03,
+			name:         "1000 tokens",
+			tokens:       1000,
+			costPer1K:    0.03,
 			expectedCost: 0.03,
 		},
 		{
-			name:        "500 tokens",
-			tokens:      500,
-			costPer1K:   0.06,
+			name:         "500 tokens",
+			tokens:       500,
+			costPer1K:    0.06,
 			expectedCost: 0.03,
 		},
 		{
-			name:        "100 tokens",
-			tokens:      100,
-			costPer1K:   0.03,
+			name:         "100 tokens",
+			tokens:       100,
+			costPer1K:    0.03,
 			expectedCost: 0.003,
 		},
 	}

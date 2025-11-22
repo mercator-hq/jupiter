@@ -89,12 +89,11 @@ func runBenchmark(cmd *cobra.Command, args []string) error {
 }
 
 type benchmarkResults struct {
-	totalRequests   int
-	successfulReqs  int
-	failedReqs      int
-	duration        time.Duration
-	latencies       []time.Duration
-	errors          []error
+	totalRequests  int
+	successfulReqs int
+	failedReqs     int
+	duration       time.Duration
+	latencies      []time.Duration
 }
 
 func runLoadTest(totalRequests int) *benchmarkResults {

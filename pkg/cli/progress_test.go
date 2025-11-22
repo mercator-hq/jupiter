@@ -38,11 +38,8 @@ func TestSimpleProgressZeroTotal(t *testing.T) {
 	progress.Update(0)
 	progress.Finish()
 
-	// Should have minimal output since total is 0
-	output := buf.String()
-	if output != "\n" && output != "" {
-		// Either empty or just newline is acceptable
-	}
+	// Should have minimal output since total is 0 (either empty or just newline is acceptable)
+	_ = buf.String()
 }
 
 func TestSimpleProgressError(t *testing.T) {

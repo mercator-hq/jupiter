@@ -123,7 +123,7 @@ func TestIntegration_MultiDimension(t *testing.T) {
 	}
 
 	// Verify they have independent budgets
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "key-1",
 		Dimension:  DimensionAPIKey,
 		Cost:       60.00, // Exceeds key-2 budget but not key-1
@@ -159,7 +159,7 @@ func TestIntegration_AlertThreshold(t *testing.T) {
 	ctx := context.Background()
 
 	// Use 70% of budget - should not trigger alert
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       7.00,
@@ -171,7 +171,7 @@ func TestIntegration_AlertThreshold(t *testing.T) {
 	}
 
 	// Use another 15% (total 85%) - should trigger alert
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       1.50,
@@ -246,7 +246,7 @@ func TestIntegration_ConcurrentLoad(t *testing.T) {
 			manager.ReleaseConcurrent("load-test")
 
 			// Record usage
-			manager.RecordUsage(ctx, &UsageRecord{
+			_ = manager.RecordUsage(ctx, &UsageRecord{
 				Identifier: "load-test",
 				Dimension:  DimensionAPIKey,
 				Cost:       0.01,
@@ -290,7 +290,7 @@ func TestIntegration_ModelDowngrade(t *testing.T) {
 	ctx := context.Background()
 
 	// Exceed budget
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       6.00,
@@ -365,7 +365,7 @@ func TestIntegration_LoadTest(t *testing.T) {
 
 			if result.Allowed {
 				// Record usage
-				manager.RecordUsage(ctx, &UsageRecord{
+				_ = manager.RecordUsage(ctx, &UsageRecord{
 					Identifier: key,
 					Dimension:  DimensionAPIKey,
 					Cost:       0.01,
@@ -406,7 +406,7 @@ func TestIntegration_RollingWindow(t *testing.T) {
 	ctx := context.Background()
 
 	// Use most of hourly budget
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       0.90,
@@ -419,7 +419,7 @@ func TestIntegration_RollingWindow(t *testing.T) {
 	}
 
 	// Add more to exceed
-	manager.RecordUsage(ctx, &UsageRecord{
+	_ = manager.RecordUsage(ctx, &UsageRecord{
 		Identifier: "test-key",
 		Dimension:  DimensionAPIKey,
 		Cost:       0.15,

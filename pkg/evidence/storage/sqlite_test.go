@@ -825,7 +825,7 @@ func BenchmarkSQLiteStorage_Query(b *testing.B) {
 			Model:       "gpt-4",
 			Provider:    "openai",
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	query := &evidence.Query{
@@ -870,7 +870,7 @@ func BenchmarkSQLiteStorage_Count(b *testing.B) {
 			Provider:    "openai",
 			Model:       "gpt-4",
 		}
-		storage.Store(ctx, record)
+		_ = storage.Store(ctx, record)
 	}
 
 	query := &evidence.Query{

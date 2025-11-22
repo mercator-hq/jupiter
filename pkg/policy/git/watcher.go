@@ -168,7 +168,9 @@ func (w *Watcher) pollLoop(ctx context.Context) {
 // It implements smart filtering to only reload when policy files change,
 // and uses debouncing to handle multiple rapid commits.
 func (w *Watcher) checkForChanges(ctx context.Context) error {
+	w.mu.Lock()
 	w.metrics.PollCount++
+	w.mu.Unlock()
 
 	// Create timeout context for pull operation
 	pullCtx, cancel := context.WithTimeout(ctx, w.pollTimeout)
@@ -194,12 +196,12 @@ func (w *Watcher) checkForChanges(ctx context.Context) error {
 	hasPolicyChanges := w.hasPolicyFileChanges(result.ChangedFiles)
 
 	if !hasPolicyChanges {
-		w.metrics.SkippedPolls++
 		w.logger.Info("non-policy files changed, skipping reload",
 			"changed_files", result.ChangedFiles)
 		// Update last commit SHA even though we're not reloading
 		// This prevents checking the same commit repeatedly
 		w.mu.Lock()
+		w.metrics.SkippedPolls++
 		w.lastCommitSHA = result.ToSHA
 		w.mu.Unlock()
 		return nil
@@ -246,8 +248,10 @@ func (w *Watcher) debounceReload(ctx context.Context, newSHA string) {
 func (w *Watcher) performReload(ctx context.Context, newSHA string) error {
 	start := time.Now()
 	defer func() {
+		w.mu.Lock()
 		w.metrics.LastReloadDur = time.Since(start)
 		w.metrics.LastReloadTime = time.Now()
+		w.mu.Unlock()
 	}()
 
 	w.logger.Info("reloading policies", "commit_sha", newSHA[:8])
@@ -257,7 +261,9 @@ func (w *Watcher) performReload(ctx context.Context, newSHA string) error {
 
 	// Call reload callback
 	if err := w.reloadFn(policyPath); err != nil {
+		w.mu.Lock()
 		w.metrics.FailedReloads++
+		w.mu.Unlock()
 		w.logger.Error("policy validation failed, attempting rollback",
 			"error", err,
 			"current_sha", newSHA[:8],
@@ -280,13 +286,14 @@ func (w *Watcher) performReload(ctx context.Context, newSHA string) error {
 	w.mu.Lock()
 	oldSHA := w.lastCommitSHA
 	w.lastCommitSHA = newSHA
+	w.metrics.SuccessfulReloads++
+	reloadDur := w.metrics.LastReloadDur
 	w.mu.Unlock()
 
-	w.metrics.SuccessfulReloads++
 	w.logger.Info("successfully reloaded policies",
 		"from_sha", oldSHA[:8],
 		"to_sha", newSHA[:8],
-		"duration", w.metrics.LastReloadDur)
+		"duration", reloadDur)
 
 	return nil
 }

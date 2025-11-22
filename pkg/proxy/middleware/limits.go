@@ -48,8 +48,8 @@ func LimitsMiddleware(manager *limits.Manager) func(http.Handler) http.Handler {
 			if !ok || enriched == nil {
 				// No enriched data, estimate defaults
 				enriched = &enrichedRequestContext{
-					estimatedTokens: 1000, // Default estimate
-					estimatedCost:   0.01,  // Default cost
+					estimatedTokens: 1000,    // Default estimate
+					estimatedCost:   0.01,    // Default cost
 					model:           "gpt-4", // Default model
 				}
 			}
@@ -79,7 +79,7 @@ func LimitsMiddleware(manager *limits.Manager) func(http.Handler) http.Handler {
 			// Handle downgrade action
 			if result.Action == limits.ActionDowngrade && result.DowngradeTo != "" {
 				// Store downgrade info in context for routing layer
-				ctx = context.WithValue(ctx, "downgraded_model", result.DowngradeTo)
+				ctx = context.WithValue(ctx, DowngradedModelKey, result.DowngradeTo)
 				r = r.WithContext(ctx)
 			}
 

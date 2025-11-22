@@ -299,7 +299,7 @@ func TestAPIKeyValidator_Update(t *testing.T) {
 
 	// Re-enable and verify changes
 	updatedKey.Enabled = true
-	validator.Update(updatedKey)
+	_ = validator.Update(updatedKey)
 
 	info, err := validator.Validate("sk-test-key")
 	if err != nil {

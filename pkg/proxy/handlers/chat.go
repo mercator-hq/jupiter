@@ -272,7 +272,9 @@ func handleChatRequest(w http.ResponseWriter, r *http.Request, pm ProviderManage
 			"method",
 			"method_not_allowed",
 		)
-		proxy.WriteErrorResponse(w, errResp)
+		if err := proxy.WriteErrorResponse(w, errResp); err != nil {
+			slog.ErrorContext(ctx, "failed to write error response", "error", err)
+		}
 		return
 	}
 
@@ -285,7 +287,9 @@ func handleChatRequest(w http.ResponseWriter, r *http.Request, pm ProviderManage
 		)
 
 		errResp := proxy.HandleError(err)
-		proxy.WriteErrorResponse(w, errResp)
+		if err := proxy.WriteErrorResponse(w, errResp); err != nil {
+			slog.ErrorContext(ctx, "failed to write error response", "error", err)
+		}
 		return
 	}
 
@@ -312,7 +316,9 @@ func handleChatRequest(w http.ResponseWriter, r *http.Request, pm ProviderManage
 		)
 
 		errResp := proxy.HandleError(err)
-		proxy.WriteErrorResponse(w, errResp)
+		if err := proxy.WriteErrorResponse(w, errResp); err != nil {
+			slog.ErrorContext(ctx, "failed to write error response", "error", err)
+		}
 		return
 	}
 
@@ -334,7 +340,9 @@ func handleChatRequest(w http.ResponseWriter, r *http.Request, pm ProviderManage
 		)
 
 		errResp := proxy.HandleError(err)
-		proxy.WriteErrorResponse(w, errResp)
+		if err := proxy.WriteErrorResponse(w, errResp); err != nil {
+			slog.ErrorContext(ctx, "failed to write error response", "error", err)
+		}
 		return
 	}
 
@@ -387,7 +395,9 @@ func handleStreamRequest(w http.ResponseWriter, r *http.Request, pm ProviderMana
 		)
 
 		errResp := proxy.HandleError(err)
-		proxy.WriteErrorResponse(w, errResp)
+		if err := proxy.WriteErrorResponse(w, errResp); err != nil {
+			slog.ErrorContext(ctx, "failed to write error response", "error", err)
+		}
 		return
 	}
 
@@ -414,7 +424,9 @@ func handleStreamRequest(w http.ResponseWriter, r *http.Request, pm ProviderMana
 		)
 
 		errResp := proxy.HandleError(err)
-		proxy.WriteSSEError(w, errResp)
+		if err := proxy.WriteSSEError(w, errResp); err != nil {
+			slog.ErrorContext(ctx, "failed to write SSE error", "error", err)
+		}
 		return
 	}
 
@@ -442,7 +454,9 @@ func handleStreamRequest(w http.ResponseWriter, r *http.Request, pm ProviderMana
 			)
 
 			errResp := proxy.HandleError(chunk.Error)
-			proxy.WriteSSEError(w, errResp)
+			if err := proxy.WriteSSEError(w, errResp); err != nil {
+				slog.ErrorContext(ctx, "failed to write SSE error", "error", err)
+			}
 			break
 		}
 

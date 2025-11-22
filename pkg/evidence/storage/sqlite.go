@@ -552,16 +552,24 @@ func (s *SQLiteStorage) scanRow(row *sql.Rows) (*evidence.EvidenceRecord, error)
 
 	// Unmarshal JSON fields
 	if requestHeaders != "" {
-		json.Unmarshal([]byte(requestHeaders), &record.RequestHeaders)
+		if err := json.Unmarshal([]byte(requestHeaders), &record.RequestHeaders); err != nil {
+			s.logger.Warn("failed to unmarshal request headers", "record_id", record.ID, "error", err)
+		}
 	}
 	if toolsUsed != "" {
-		json.Unmarshal([]byte(toolsUsed), &record.ToolsUsed)
+		if err := json.Unmarshal([]byte(toolsUsed), &record.ToolsUsed); err != nil {
+			s.logger.Warn("failed to unmarshal tools used", "record_id", record.ID, "error", err)
+		}
 	}
 	if piiTypes != "" {
-		json.Unmarshal([]byte(piiTypes), &record.PIITypes)
+		if err := json.Unmarshal([]byte(piiTypes), &record.PIITypes); err != nil {
+			s.logger.Warn("failed to unmarshal PII types", "record_id", record.ID, "error", err)
+		}
 	}
 	if matchedRules != "" {
-		json.Unmarshal([]byte(matchedRules), &record.MatchedRules)
+		if err := json.Unmarshal([]byte(matchedRules), &record.MatchedRules); err != nil {
+			s.logger.Warn("failed to unmarshal matched rules", "record_id", record.ID, "error", err)
+		}
 	}
 
 	// Convert provider latency from milliseconds

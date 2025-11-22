@@ -104,7 +104,7 @@ telemetry:
 	firstConfig := GetConfig()
 
 	// Second initialization should be ignored
-	Initialize(configPath2)
+	_ = Initialize(configPath2)
 
 	secondConfig := GetConfig()
 

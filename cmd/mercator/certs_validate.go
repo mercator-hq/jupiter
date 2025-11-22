@@ -52,7 +52,7 @@ func init() {
 	certsValidateCmd.Flags().StringVar(&certsValidateFlags.keyFile, "key", "", "private key file")
 	certsValidateCmd.Flags().StringVar(&certsValidateFlags.caFile, "ca", "", "CA certificate file")
 
-	certsValidateCmd.MarkFlagRequired("cert")
+	_ = certsValidateCmd.MarkFlagRequired("cert")
 }
 
 func validateCertificate(cmd *cobra.Command, args []string) error {

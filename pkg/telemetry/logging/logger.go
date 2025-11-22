@@ -47,9 +47,6 @@ type Logger struct {
 
 	// writer is the underlying writer
 	writer io.Writer
-
-	// mu protects concurrent access
-	mu sync.RWMutex
 }
 
 // LogBuffer provides async buffering for log writes to avoid blocking.

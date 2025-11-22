@@ -26,7 +26,6 @@ type Server struct {
 	providerManager ProviderManager
 	shutdownChan    chan struct{}
 	shutdownOnce    sync.Once
-	wg              sync.WaitGroup
 	mu              sync.RWMutex
 	isRunning       bool
 }

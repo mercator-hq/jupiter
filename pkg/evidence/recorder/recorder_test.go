@@ -139,7 +139,7 @@ func TestRecorder_RecordResponse(t *testing.T) {
 		Action: engine.ActionAllow,
 	}
 
-	recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
+	_ = recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
 
 	// Now record the response
 	responseMeta := &proxy.ResponseMetadata{
@@ -248,7 +248,7 @@ func TestRecorder_HashingEnabled(t *testing.T) {
 
 	policyDecision := &engine.PolicyDecision{Action: engine.ActionAllow}
 
-	recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
+	_ = recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
 
 	// Record response
 	responseMeta := &proxy.ResponseMetadata{
@@ -265,7 +265,7 @@ func TestRecorder_HashingEnabled(t *testing.T) {
 		},
 	}
 
-	recorder.RecordResponse(ctx, responseMeta, enrichedResp)
+	_ = recorder.RecordResponse(ctx, responseMeta, enrichedResp)
 
 	// Wait for async write
 	time.Sleep(100 * time.Millisecond)
@@ -322,7 +322,7 @@ func TestRecorder_APIKeyRedaction(t *testing.T) {
 
 	policyDecision := &engine.PolicyDecision{Action: engine.ActionAllow}
 
-	recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
+	_ = recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
 
 	// Record response
 	responseMeta := &proxy.ResponseMetadata{
@@ -337,7 +337,7 @@ func TestRecorder_APIKeyRedaction(t *testing.T) {
 		},
 	}
 
-	recorder.RecordResponse(ctx, responseMeta, enrichedResp)
+	_ = recorder.RecordResponse(ctx, responseMeta, enrichedResp)
 
 	// Wait for async write
 	time.Sleep(100 * time.Millisecond)
@@ -389,7 +389,7 @@ func TestRecorder_GracefulShutdown(t *testing.T) {
 
 		policyDecision := &engine.PolicyDecision{Action: engine.ActionAllow}
 
-		recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
+		_ = recorder.RecordRequest(ctx, requestMeta, enrichedReq, policyDecision)
 
 		responseMeta := &proxy.ResponseMetadata{
 			Timestamp:  now.Add(100 * time.Millisecond),
@@ -403,7 +403,7 @@ func TestRecorder_GracefulShutdown(t *testing.T) {
 			},
 		}
 
-		recorder.RecordResponse(ctx, responseMeta, enrichedResp)
+		_ = recorder.RecordResponse(ctx, responseMeta, enrichedResp)
 	}
 
 	// Close immediately (should drain channel)

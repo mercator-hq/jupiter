@@ -143,7 +143,7 @@ func TestQueryPerformance_LargeDataset(t *testing.T) {
 			TotalTokens: 1000 + i,
 			ActualCost:  0.01 + float64(i)*0.0001,
 		}
-		store.Store(ctx, record)
+		_ = store.Store(ctx, record)
 	}
 	insertDuration := time.Since(insertStart)
 	t.Logf("Inserted %d records in %v", recordCount, insertDuration)
@@ -282,7 +282,7 @@ func TestRetentionPerformance(t *testing.T) {
 			RequestTime: now.AddDate(0, 0, age),
 			Model:       "gpt-4",
 		}
-		store.Store(ctx, record)
+		_ = store.Store(ctx, record)
 	}
 
 	// Delete old records (simulate retention pruning)
@@ -333,14 +333,14 @@ func TestMemoryUsageUnderLoad(t *testing.T) {
 	// Insert 10K records
 	for i := 0; i < 10000; i++ {
 		record := &evidence.EvidenceRecord{
-			ID:          fmt.Sprintf("record-%d", i),
-			RequestID:   fmt.Sprintf("req-%d", i),
-			RequestTime: now,
-			Model:       "gpt-4",
+			ID:           fmt.Sprintf("record-%d", i),
+			RequestID:    fmt.Sprintf("req-%d", i),
+			RequestTime:  now,
+			Model:        "gpt-4",
 			SystemPrompt: "You are a helpful assistant",
 			UserPrompt:   "Test question",
 		}
-		store.Store(ctx, record)
+		_ = store.Store(ctx, record)
 	}
 
 	// Query multiple times to test for memory leaks
@@ -461,7 +461,7 @@ func BenchmarkConcurrentQueryPerformance(b *testing.B) {
 			Model:       "gpt-4",
 			Provider:    "openai",
 		}
-		store.Store(ctx, record)
+		_ = store.Store(ctx, record)
 	}
 
 	query := &evidence.Query{
