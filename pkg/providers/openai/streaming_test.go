@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -311,6 +312,7 @@ func TestOpenAI_StreamingErrorHandling(t *testing.T) {
 
 // TestOpenAI_StreamingClientDisconnect verifies cleanup on client disconnect
 func TestOpenAI_StreamingClientDisconnect(t *testing.T) {
+	var mu sync.Mutex
 	chunksServed := 0
 	cleanedUp := false
 
@@ -323,7 +325,9 @@ func TestOpenAI_StreamingClientDisconnect(t *testing.T) {
 			select {
 			case <-r.Context().Done():
 				// Client disconnected
+				mu.Lock()
 				cleanedUp = true
+				mu.Unlock()
 				return
 			default:
 			}
@@ -331,7 +335,9 @@ func TestOpenAI_StreamingClientDisconnect(t *testing.T) {
 			chunk := fmt.Sprintf(`data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4","choices":[{"index":0,"delta":{"content":"chunk%d"},"finish_reason":null}]}`, i)
 			fmt.Fprintf(w, "%s\n\n", chunk)
 			flusher.Flush()
+			mu.Lock()
 			chunksServed++
+			mu.Unlock()
 			time.Sleep(50 * time.Millisecond)
 		}
 	}))
@@ -389,14 +395,19 @@ func TestOpenAI_StreamingClientDisconnect(t *testing.T) {
 	}
 
 	// 2. Server didn't send all 100 chunks (stopped due to disconnect)
-	if chunksServed >= 100 {
-		t.Errorf("expected server to stop sending after disconnect, but sent all %d chunks", chunksServed)
+	mu.Lock()
+	served := chunksServed
+	cleaned := cleanedUp
+	mu.Unlock()
+
+	if served >= 100 {
+		t.Errorf("expected server to stop sending after disconnect, but sent all %d chunks", served)
 	}
 
 	// 3. Context cancellation was detected (cleanup occurred)
 	// Note: This is tricky to test reliably. We rely on the server's context being cancelled.
 	t.Logf("Client disconnect test: read %d chunks, server served %d chunks, cleanup: %v",
-		chunksRead, chunksServed, cleanedUp)
+		chunksRead, served, cleaned)
 }
 
 // TestOpenAI_StreamingFinalUsageChunk verifies usage information in final chunk
