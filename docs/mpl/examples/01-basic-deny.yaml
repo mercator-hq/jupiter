@@ -1,0 +1,23 @@
+# Example 1: Basic Request Blocking
+# Use Case: Block requests with high risk scores
+# Expected Behavior: Requests with risk_score > 7 are denied
+
+mpl_version: "1.0"
+name: "basic-deny"
+version: "1.0.0"
+description: "Block high-risk requests based on risk score"
+author: "security-team@example.com"
+tags: ["safety", "risk-management"]
+
+rules:
+  - name: "block-high-risk-requests"
+    description: "Deny requests that exceed risk threshold"
+    enabled: true
+    conditions:
+      - field: "processing.risk_score"
+        operator: ">"
+        value: 7
+    actions:
+      - type: "deny"
+        message: "Request blocked: risk score too high"
+        code: "risk_too_high"

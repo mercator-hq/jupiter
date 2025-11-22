@@ -1,0 +1,60 @@
+# Example 10: Multi-Turn Conversation Management
+# Use Case: Manage conversation context and prevent context window overflow
+# Expected Behavior: Warn when context is filling up, block when overflow imminent
+
+mpl_version: "1.0"
+name: "conversation-management"
+version: "1.0.0"
+description: "Manage multi-turn conversations and context windows"
+author: "platform-team@example.com"
+tags: ["conversation", "context-management"]
+
+variables:
+  warning_threshold: 0.8  # 80% of context window
+  block_threshold: 0.95   # 95% of context window
+
+rules:
+  - name: "warn-context-overflow"
+    description: "Warn when conversation is approaching context window limit"
+    enabled: true
+    conditions:
+      - all:
+          - field: "processing.conversation_context.context_window_percent"
+            operator: ">"
+            value: "{{ variables.warning_threshold }}"
+          - field: "processing.conversation_context.context_window_percent"
+            operator: "<="
+            value: "{{ variables.block_threshold }}"
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Context window {{ processing.conversation_context.context_window_percent }}% full ({{ processing.conversation_context.context_window_usage }} tokens)"
+      - type: "allow"
+
+  - name: "block-context-overflow"
+    description: "Block requests that would overflow the context window"
+    enabled: true
+    conditions:
+      - field: "processing.conversation_context.context_window_percent"
+        operator: ">"
+        value: "{{ variables.block_threshold }}"
+    actions:
+      - type: "log"
+        level: "error"
+        message: "Context window overflow prevented: {{ processing.conversation_context.context_window_percent }}%"
+      - type: "deny"
+        message: "Conversation too long. Please start a new conversation."
+        code: "context_overflow"
+
+  - name: "log-conversation-metrics"
+    description: "Log conversation metrics for analytics"
+    enabled: true
+    conditions:
+      - field: "processing.conversation_context.turn_count"
+        operator: ">"
+        value: 1
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Multi-turn conversation: turns={{ processing.conversation_context.turn_count }}, context_usage={{ processing.conversation_context.context_window_percent }}%"
+      - type: "allow"

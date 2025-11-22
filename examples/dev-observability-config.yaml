@@ -1,0 +1,84 @@
+# Mercator Jupiter - Development Observability Configuration
+#
+# Minimal configuration for local development with observability.
+# Optimized for debugging and troubleshooting.
+
+proxy:
+  listen_address: "127.0.0.1:8080"
+  timeout: 30s
+
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+    models:
+      - gpt-4
+      - gpt-3.5-turbo
+
+telemetry:
+  logging:
+    level: debug          # Verbose logging for development
+    format: text          # Human-readable console output
+    add_source: true      # Include file:line for debugging
+    redact_pii: false     # Disable for local dev (easier debugging)
+    buffer_size: 1000     # Smaller buffer (less memory)
+
+  metrics:
+    enabled: true
+    path: /metrics
+    namespace: mercator
+    subsystem: jupiter
+
+  tracing:
+    enabled: true
+    sampler: always       # Sample 100% of requests for dev
+    sample_ratio: 1.0
+    exporter: otlp
+    endpoint: "localhost:4317"
+    service_name: mercator-jupiter-dev
+    otlp:
+      insecure: true
+      timeout: 10s
+
+  health:
+    enabled: true
+    liveness_path: /health
+    readiness_path: /ready
+    version_path: /version
+    check_timeout: 5s
+    min_healthy_providers: 1
+
+policy:
+  mode: file
+  file_path: "./examples/policies/allow-all.yaml"
+
+evidence:
+  enabled: false
+
+# Development Tips:
+#
+# 1. View Logs:
+#    tail -f mercator.log | jq .
+#
+# 2. Check Health:
+#    curl http://localhost:8080/health
+#    curl http://localhost:8080/ready
+#    curl http://localhost:8080/version
+#
+# 3. View Metrics:
+#    curl http://localhost:8080/metrics
+#
+# 4. Run Local Jaeger (for traces):
+#    docker run -d --name jaeger \
+#      -p 4317:4317 \
+#      -p 16686:16686 \
+#      jaegertracing/all-in-one:latest
+#
+#    View traces: http://localhost:16686
+#
+# 5. Run Local Prometheus (for metrics):
+#    docker run -d --name prometheus \
+#      -p 9090:9090 \
+#      -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+#      prom/prometheus
+#
+#    View metrics: http://localhost:9090

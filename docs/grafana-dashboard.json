@@ -1,0 +1,370 @@
+{
+  "dashboard": {
+    "title": "Mercator Jupiter - Observability Dashboard",
+    "description": "Comprehensive observability dashboard for Mercator Jupiter LLM Gateway",
+    "tags": ["mercator", "jupiter", "llm", "observability"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(rate(mercator_jupiter_requests_total[5m]))",
+            "legendFormat": "Total Requests/s",
+            "refId": "A"
+          },
+          {
+            "expr": "sum by (status) (rate(mercator_jupiter_requests_total[5m]))",
+            "legendFormat": "{{status}}",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Requests/s", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+
+      {
+        "id": 2,
+        "title": "Success Rate",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(rate(mercator_jupiter_requests_total{status=\"success\"}[5m])) / sum(rate(mercator_jupiter_requests_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+
+      {
+        "id": 3,
+        "title": "Total Cost (USD)",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(mercator_jupiter_cost_total)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2
+          }
+        }
+      },
+
+      {
+        "id": 4,
+        "title": "Request Latency (P50, P95, P99)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(mercator_jupiter_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(mercator_jupiter_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(mercator_jupiter_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P99",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"label": "Duration", "format": "s"},
+          {"label": "", "format": "short"}
+        ]
+      },
+
+      {
+        "id": 5,
+        "title": "Provider Health",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "mercator_jupiter_provider_health",
+            "legendFormat": "{{provider}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none",
+            "mappings": [
+              {"type": "value", "value": "0", "text": "Unhealthy", "color": "red"},
+              {"type": "value", "value": "1", "text": "Healthy", "color": "green"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+
+      {
+        "id": 6,
+        "title": "Requests by Provider",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (provider) (rate(mercator_jupiter_requests_total[5m]))",
+            "legendFormat": "{{provider}}",
+            "refId": "A"
+          }
+        ]
+      },
+
+      {
+        "id": 7,
+        "title": "Cost by Provider",
+        "type": "bargraph",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (provider) (rate(mercator_jupiter_cost_total[1h])) * 3600",
+            "legendFormat": "{{provider}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+
+      {
+        "id": 8,
+        "title": "Cost Rate (USD/hour)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 16},
+        "targets": [
+          {
+            "expr": "rate(mercator_jupiter_cost_total[1h]) * 3600",
+            "legendFormat": "Cost Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "USD/hour", "format": "currencyUSD"},
+          {"label": "", "format": "short"}
+        ]
+      },
+
+      {
+        "id": 9,
+        "title": "Token Usage (Prompt vs Completion)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "sum(rate(mercator_jupiter_request_tokens_total{type=\"prompt\"}[5m]))",
+            "legendFormat": "Prompt Tokens/s",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(mercator_jupiter_request_tokens_total{type=\"completion\"}[5m]))",
+            "legendFormat": "Completion Tokens/s",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Tokens/s", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+
+      {
+        "id": 10,
+        "title": "Policy Evaluations",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "targets": [
+          {
+            "expr": "sum by (action) (rate(mercator_jupiter_policy_evaluations_total[5m]))",
+            "legendFormat": "{{action}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Evaluations/s", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+
+      {
+        "id": 11,
+        "title": "Provider Errors",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+        "targets": [
+          {
+            "expr": "sum by (provider, error_type) (rate(mercator_jupiter_provider_errors_total[5m]))",
+            "legendFormat": "{{provider}}: {{error_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Errors/s", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+
+      {
+        "id": 12,
+        "title": "Cache Hit Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+        "targets": [
+          {
+            "expr": "sum(rate(mercator_jupiter_cache_hits_total[5m])) / (sum(rate(mercator_jupiter_cache_hits_total[5m])) + sum(rate(mercator_jupiter_cache_misses_total[5m]))) * 100",
+            "legendFormat": "Hit Rate %",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Percent", "format": "percent", "max": 100},
+          {"label": "", "format": "short"}
+        ]
+      },
+
+      {
+        "id": 13,
+        "title": "Top 10 Most Used Models",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
+        "targets": [
+          {
+            "expr": "topk(10, sum by (model) (rate(mercator_jupiter_requests_total[5m])))",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": {},
+              "renameByName": {
+                "model": "Model",
+                "Value": "Requests/s"
+              }
+            }
+          }
+        ]
+      },
+
+      {
+        "id": 14,
+        "title": "Cost per Request",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(mercator_jupiter_cost_per_request_bucket[5m]))",
+            "legendFormat": "P50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(mercator_jupiter_cost_per_request_bucket[5m]))",
+            "legendFormat": "P95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(mercator_jupiter_cost_per_request_bucket[5m]))",
+            "legendFormat": "P99",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"label": "Cost (USD)", "format": "currencyUSD"},
+          {"label": "", "format": "short"}
+        ]
+      }
+    ],
+
+    "templating": {
+      "list": [
+        {
+          "name": "provider",
+          "label": "Provider",
+          "type": "query",
+          "query": "label_values(mercator_jupiter_requests_total, provider)",
+          "multi": true,
+          "includeAll": true
+        },
+        {
+          "name": "model",
+          "label": "Model",
+          "type": "query",
+          "query": "label_values(mercator_jupiter_requests_total, model)",
+          "multi": true,
+          "includeAll": true
+        }
+      ]
+    },
+
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"]
+    },
+
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(up{job=\"mercator-jupiter\"}[5m]) > 0",
+          "iconColor": "rgba(255, 96, 96, 1)",
+          "tagKeys": "instance",
+          "textFormat": "Restart detected"
+        }
+      ]
+    }
+  },
+
+  "overwrite": true,
+  "message": "Mercator Jupiter Observability Dashboard v1.0"
+}

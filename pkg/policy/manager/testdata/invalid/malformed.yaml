@@ -1,0 +1,8 @@
+mpl_version: "1.0"
+name: "malformed-policy"
+rules:
+  - name: "test-rule"
+    conditions:
+      field: "request.model
+      operator: "=="
+    actions:

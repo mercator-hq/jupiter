@@ -1,0 +1,58 @@
+# Logging and Observability Policy
+# Priority range: 1-49 (lowest priority)
+# Owner: Observability Team
+
+mpl_version: "1.0"
+name: "logging-observability"
+version: "1.0.0"
+description: "Request logging and monitoring"
+
+metadata:
+  owner: "observability@example.com"
+  category: "observability"
+  priority_range: "1-49"
+
+rules:
+  - name: "log-all-requests"
+    description: "Comprehensive request logging for analytics"
+    priority: 20
+    conditions:
+      field: "request.type"
+      operator: "=="
+      value: "completion"
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Request processed"
+        include_fields:
+          - "request.user.id"
+          - "request.model"
+          - "request.timestamp"
+          - "request.estimated_tokens"
+
+  - name: "log-production-requests"
+    description: "Enhanced logging for production environment"
+    priority: 15
+    conditions:
+      field: "environment"
+      operator: "=="
+      value: "production"
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Production request"
+        include_fields:
+          - "request.user.id"
+          - "request.user.tier"
+          - "request.ip_address"
+
+  - name: "default-allow"
+    description: "Allow requests that pass all checks"
+    priority: 1
+    conditions:
+      field: "request.type"
+      operator: "=="
+      value: "completion"
+    actions:
+      - type: "allow"
+        message: "Request approved"

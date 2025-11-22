@@ -1,0 +1,72 @@
+# Example TLS Configuration for Mercator Jupiter
+# This demonstrates TLS and mTLS setup for production environments
+
+proxy:
+  listen_address: "0.0.0.0:8443"
+  read_timeout: 30s
+  write_timeout: 30s
+  idle_timeout: 120s
+
+security:
+  tls:
+    # Enable TLS for the proxy server
+    enabled: true
+
+    # Certificate and key files (use Let's Encrypt or your own CA)
+    cert_file: "/etc/mercator/certs/server.crt"
+    key_file: "/etc/mercator/certs/server.key"
+
+    # Minimum TLS version (1.2 or 1.3)
+    # Default: 1.3 (recommended for security)
+    min_version: "1.3"
+
+    # Cipher suites (optional - uses secure defaults if not specified)
+    # TLS 1.3 cipher suites
+    cipher_suites:
+      - "TLS_AES_128_GCM_SHA256"
+      - "TLS_AES_256_GCM_SHA384"
+      - "TLS_CHACHA20_POLY1305_SHA256"
+
+    # Certificate auto-reload interval
+    # Certificates are checked for changes and reloaded without server restart
+    cert_reload_interval: "5m"
+
+    # Mutual TLS (mTLS) configuration
+    mtls:
+      # Enable client certificate authentication
+      enabled: false
+
+      # CA certificate for verifying client certificates
+      client_ca_file: "/etc/mercator/certs/client-ca.pem"
+
+      # Client authentication type:
+      # - "require": client certificate required (reject if missing)
+      # - "request": request but don't require (allow if missing)
+      # - "verify_if_given": verify if provided, allow if not
+      client_auth_type: "require"
+
+      # Verify client certificates against CA
+      verify_client_cert: true
+
+      # Extract client identity from certificate:
+      # - "subject.CN": Common Name (e.g., "client-app-1")
+      # - "subject.OU": Organizational Unit (e.g., "engineering")
+      # - "subject.O": Organization (e.g., "Acme Corp")
+      # - "SAN": First DNS name from Subject Alternative Names
+      identity_source: "subject.CN"
+
+providers:
+  openai:
+    base_url: "https://api.openai.com/v1"
+    api_key: "${OPENAI_API_KEY}"
+    timeout: 60s
+
+  anthropic:
+    base_url: "https://api.anthropic.com"
+    api_key: "${ANTHROPIC_API_KEY}"
+    timeout: 60s
+
+telemetry:
+  logging:
+    level: "info"
+    format: "json"

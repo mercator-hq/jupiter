@@ -1,0 +1,70 @@
+# Example 17: Tool/Function Calling Policies
+# Use Case: Control which tools/functions can be called by LLMs
+# Expected Behavior: Restrict or audit tool usage based on security policies
+
+mpl_version: "1.0"
+name: "tool-calling-policy"
+version: "1.0.0"
+description: "Govern LLM tool and function calling"
+author: "security-team@example.com"
+tags: ["security", "tools", "function-calling"]
+
+variables:
+  allowed_tools:
+    - "get_weather"
+    - "search_web"
+    - "calculator"
+  restricted_tools:
+    - "execute_code"
+    - "send_email"
+    - "file_system_access"
+
+rules:
+  - name: "block-restricted-tools"
+    description: "Block usage of restricted/dangerous tools"
+    enabled: true
+    conditions:
+      - function: "contains"
+        args: ["{{ variables.restricted_tools }}", "request.tools"]
+        operator: "=="
+        value: true
+    actions:
+      - type: "log"
+        level: "error"
+        message: "Blocked request with restricted tools from user {{ request.user }}"
+      - type: "alert"
+        webhook: "https://security.example.com/restricted-tool"
+        message: "Attempt to use restricted tools: {{ request.tools }}"
+        severity: "high"
+      - type: "deny"
+        message: "One or more requested tools are restricted for security reasons"
+        code: "restricted_tool"
+
+  - name: "audit-tool-usage"
+    description: "Log all tool/function calling for audit"
+    enabled: true
+    conditions:
+      - field: "request.model"
+        operator: "!="
+        value: ""
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Tool calling request: user={{ request.user }}, tools={{ request.tools }}"
+      - type: "allow"
+
+  - name: "limit-tool-count"
+    description: "Prevent excessive tool usage in single request"
+    enabled: true
+    conditions:
+      - function: "len"
+        args: ["request.tools"]
+        operator: ">"
+        value: 5
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Request with excessive tools ({{ len(request.tools) }}) from user {{ request.user }}"
+      - type: "deny"
+        message: "Too many tools requested. Maximum 5 tools per request."
+        code: "too_many_tools"

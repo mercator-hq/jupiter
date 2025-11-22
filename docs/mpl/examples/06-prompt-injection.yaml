@@ -1,0 +1,54 @@
+# Example 6: Prompt Injection Detection
+# Use Case: Detect and block prompt injection attempts
+# Expected Behavior: Requests with high-confidence prompt injection are blocked
+
+mpl_version: "1.0"
+name: "prompt-injection-protection"
+version: "1.0.0"
+description: "Detect and block prompt injection attacks"
+author: "security-team@example.com"
+tags: ["security", "prompt-injection", "threat-detection"]
+
+variables:
+  confidence_threshold: 0.7
+
+rules:
+  - name: "block-high-confidence-injection"
+    description: "Block requests with high-confidence prompt injection"
+    enabled: true
+    conditions:
+      - all:
+          - field: "processing.content_analysis.prompt_injection.detected"
+            operator: "=="
+            value: true
+          - field: "processing.content_analysis.prompt_injection.confidence"
+            operator: ">"
+            value: "{{ variables.confidence_threshold }}"
+    actions:
+      - type: "log"
+        level: "error"
+        message: "Prompt injection detected: confidence={{ processing.content_analysis.prompt_injection.confidence }}, patterns={{ processing.content_analysis.prompt_injection.patterns }}"
+      - type: "alert"
+        webhook: "https://security.example.com/alerts"
+        message: "Prompt injection attempt from user {{ request.user }}"
+        severity: "high"
+      - type: "deny"
+        message: "Request blocked: prompt injection detected"
+        code: "prompt_injection"
+
+  - name: "warn-low-confidence-injection"
+    description: "Log warning for low-confidence prompt injection attempts"
+    enabled: true
+    conditions:
+      - all:
+          - field: "processing.content_analysis.prompt_injection.detected"
+            operator: "=="
+            value: true
+          - field: "processing.content_analysis.prompt_injection.confidence"
+            operator: "<="
+            value: "{{ variables.confidence_threshold }}"
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Possible prompt injection: confidence={{ processing.content_analysis.prompt_injection.confidence }}"
+      - type: "allow"

@@ -1,0 +1,476 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/mercator-hq/jupiter/schemas/mpl/v1.0.json",
+  "title": "Mercator Policy Language (MPL) Schema",
+  "description": "JSON Schema for MPL v1.0 policy documents",
+  "type": "object",
+  "required": ["mpl_version", "name", "version", "rules"],
+  "properties": {
+    "mpl_version": {
+      "type": "string",
+      "description": "MPL schema version",
+      "enum": ["1.0"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Policy name (kebab-case)",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version (MAJOR.MINOR.PATCH)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable policy description"
+    },
+    "author": {
+      "type": "string",
+      "description": "Policy author or team"
+    },
+    "created": {
+      "type": "string",
+      "description": "Creation date (ISO 8601)",
+      "format": "date"
+    },
+    "updated": {
+      "type": "string",
+      "description": "Last update date (ISO 8601)",
+      "format": "date"
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags for categorization",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "variables": {
+      "type": "object",
+      "description": "Reusable variable definitions",
+      "additionalProperties": true
+    },
+    "rules": {
+      "type": "array",
+      "description": "Policy rules (evaluated in order)",
+      "items": {
+        "$ref": "#/definitions/rule"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "rule": {
+      "type": "object",
+      "description": "A single policy rule",
+      "required": ["name", "conditions", "actions"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Rule name (kebab-case)",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Rule description"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the rule is enabled",
+          "default": true
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Conditions that must be met (implicit AND)",
+          "items": {
+            "$ref": "#/definitions/condition"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "description": "Actions to execute when conditions match",
+          "items": {
+            "$ref": "#/definitions/action"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/simpleCondition"
+        },
+        {
+          "$ref": "#/definitions/functionCondition"
+        },
+        {
+          "$ref": "#/definitions/logicalCondition"
+        }
+      ]
+    },
+    "simpleCondition": {
+      "type": "object",
+      "description": "Simple field comparison condition",
+      "required": ["field", "operator", "value"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field path (dot notation)"
+        },
+        "operator": {
+          "type": "string",
+          "description": "Comparison operator",
+          "enum": [
+            "==",
+            "!=",
+            "<",
+            ">",
+            "<=",
+            ">=",
+            "contains",
+            "matches",
+            "starts_with",
+            "ends_with",
+            "in",
+            "not_in"
+          ]
+        },
+        "value": {
+          "description": "Value to compare against"
+        }
+      },
+      "additionalProperties": false
+    },
+    "functionCondition": {
+      "type": "object",
+      "description": "Function call condition",
+      "required": ["function", "args"],
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function name",
+          "enum": [
+            "len",
+            "lower",
+            "upper",
+            "has_pii",
+            "has_injection",
+            "has_sensitive",
+            "contains"
+          ]
+        },
+        "args": {
+          "type": "array",
+          "description": "Function arguments",
+          "items": {}
+        },
+        "operator": {
+          "type": "string",
+          "description": "Comparison operator (optional)",
+          "enum": [
+            "==",
+            "!=",
+            "<",
+            ">",
+            "<=",
+            ">=",
+            "contains",
+            "matches",
+            "in",
+            "not_in"
+          ]
+        },
+        "value": {
+          "description": "Value to compare function result against (optional)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "logicalCondition": {
+      "type": "object",
+      "description": "Logical operator (all, any, not)",
+      "oneOf": [
+        {
+          "properties": {
+            "all": {
+              "type": "array",
+              "description": "All conditions must be true (AND)",
+              "items": {
+                "$ref": "#/definitions/condition"
+              }
+            }
+          },
+          "required": ["all"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "any": {
+              "type": "array",
+              "description": "Any condition can be true (OR)",
+              "items": {
+                "$ref": "#/definitions/condition"
+              }
+            }
+          },
+          "required": ["any"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "not": {
+              "description": "Negation (NOT)",
+              "$ref": "#/definitions/condition"
+            }
+          },
+          "required": ["not"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "action": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/allowAction"
+        },
+        {
+          "$ref": "#/definitions/denyAction"
+        },
+        {
+          "$ref": "#/definitions/logAction"
+        },
+        {
+          "$ref": "#/definitions/redactAction"
+        },
+        {
+          "$ref": "#/definitions/modifyAction"
+        },
+        {
+          "$ref": "#/definitions/routeAction"
+        },
+        {
+          "$ref": "#/definitions/alertAction"
+        },
+        {
+          "$ref": "#/definitions/rateLimitAction"
+        },
+        {
+          "$ref": "#/definitions/budgetAction"
+        }
+      ]
+    },
+    "allowAction": {
+      "type": "object",
+      "description": "Allow action - explicitly allow the request",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "allow"
+        }
+      },
+      "additionalProperties": false
+    },
+    "denyAction": {
+      "type": "object",
+      "description": "Deny action - block the request",
+      "required": ["type", "message"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "deny"
+        },
+        "message": {
+          "type": "string",
+          "description": "Error message to return"
+        },
+        "code": {
+          "type": "string",
+          "description": "Error code for programmatic handling"
+        }
+      },
+      "additionalProperties": false
+    },
+    "logAction": {
+      "type": "object",
+      "description": "Log action - log an event",
+      "required": ["type", "level", "message"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "log"
+        },
+        "level": {
+          "type": "string",
+          "description": "Log level",
+          "enum": ["debug", "info", "warn", "error"]
+        },
+        "message": {
+          "type": "string",
+          "description": "Log message (supports templates)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "redactAction": {
+      "type": "object",
+      "description": "Redact action - remove or mask sensitive content",
+      "required": ["type", "fields", "method"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "redact"
+        },
+        "fields": {
+          "type": "array",
+          "description": "Fields to redact",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "method": {
+          "type": "string",
+          "description": "Redaction method",
+          "enum": ["mask", "remove", "replace"]
+        },
+        "replacement": {
+          "type": "string",
+          "description": "Replacement value (for 'replace' method)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "modifyAction": {
+      "type": "object",
+      "description": "Modify action - change field values",
+      "required": ["type", "field", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "modify"
+        },
+        "field": {
+          "type": "string",
+          "description": "Field to modify"
+        },
+        "value": {
+          "description": "New value"
+        }
+      },
+      "additionalProperties": false
+    },
+    "routeAction": {
+      "type": "object",
+      "description": "Route action - route to specific provider/model",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "route"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Provider name"
+        },
+        "model": {
+          "type": "string",
+          "description": "Model name"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Routing reason (for logging)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "alertAction": {
+      "type": "object",
+      "description": "Alert action - trigger external alert",
+      "required": ["type", "message"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "alert"
+        },
+        "webhook": {
+          "type": "string",
+          "description": "Webhook URL",
+          "format": "uri"
+        },
+        "message": {
+          "type": "string",
+          "description": "Alert message"
+        },
+        "severity": {
+          "type": "string",
+          "description": "Alert severity",
+          "enum": ["low", "medium", "high", "critical"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "rateLimitAction": {
+      "type": "object",
+      "description": "Rate limit action - apply rate limiting",
+      "required": ["type", "key", "limit", "window"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "rate_limit"
+        },
+        "key": {
+          "type": "string",
+          "description": "Rate limit key (supports templates)"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Request limit",
+          "minimum": 1
+        },
+        "window": {
+          "type": "string",
+          "description": "Time window (e.g., '1h', '1d')",
+          "pattern": "^\\d+[smhd]$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "budgetAction": {
+      "type": "object",
+      "description": "Budget action - enforce budget constraints",
+      "required": ["type", "key", "limit", "window", "budget_type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "budget"
+        },
+        "key": {
+          "type": "string",
+          "description": "Budget key (supports templates)"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Budget limit",
+          "minimum": 0
+        },
+        "window": {
+          "type": "string",
+          "description": "Time window (e.g., '1h', '1d', '1m')",
+          "pattern": "^\\d+[smhdm]$"
+        },
+        "budget_type": {
+          "type": "string",
+          "description": "Budget type",
+          "enum": ["tokens", "cost"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

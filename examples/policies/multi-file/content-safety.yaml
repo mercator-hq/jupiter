@@ -1,0 +1,45 @@
+# Content Safety Policy
+# Priority range: 50-99
+# Owner: Trust & Safety Team
+
+mpl_version: "1.0"
+name: "content-safety"
+version: "1.0.0"
+description: "Content filtering and compliance"
+
+metadata:
+  owner: "trust-safety@example.com"
+  category: "content-safety"
+  priority_range: "50-99"
+
+rules:
+  - name: "block-harmful-content"
+    priority: 90
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "violence"
+        - "hate speech"
+        - "illegal"
+    actions:
+      - type: "deny"
+        message: "Content policy violation"
+      - type: "log"
+        level: "error"
+        message: "Harmful content blocked"
+
+  - name: "flag-sensitive-topics"
+    priority: 60
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "medical advice"
+        - "legal advice"
+    actions:
+      - type: "allow"
+        message: "Flagged for review"
+      - type: "log"
+        level: "warning"
+        message: "Sensitive topic detected"

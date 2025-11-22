@@ -1,0 +1,141 @@
+# Content Filtering Policy
+#
+# Filter requests based on content to ensure compliance with usage policies,
+# safety guidelines, and legal requirements.
+#
+# Use case: Content safety, compliance, brand protection
+
+mpl_version: "1.0"
+name: "content-filtering"
+version: "1.0.0"
+description: "Filter requests containing inappropriate or prohibited content"
+
+metadata:
+  author: "Mercator Team"
+  category: "content-safety"
+  tags: ["filtering", "safety", "compliance"]
+
+rules:
+  # Rule 1: Block harmful content
+  - name: "block-harmful-content"
+    description: "Deny requests with harmful or dangerous content"
+    priority: 200
+
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "violence"
+        - "harm"
+        - "illegal"
+        - "weapons"
+
+    actions:
+      - type: "deny"
+        message: "Content policy violation: Request contains prohibited content"
+
+      - type: "log"
+        level: "error"
+        message: "Harmful content detected and blocked"
+        include_fields:
+          - "request.user.id"
+          - "request.ip_address"
+          - "request.model"
+
+  # Rule 2: Block PII in prompts
+  - name: "block-pii"
+    description: "Prevent accidental exposure of personal information"
+    priority: 150
+
+    conditions:
+      any:
+        - field: "request.prompt"
+          operator: "matches_regex"
+          value: "\\b\\d{3}-\\d{2}-\\d{4}\\b"  # SSN pattern
+        - field: "request.prompt"
+          operator: "matches_regex"
+          value: "\\b\\d{16}\\b"  # Credit card pattern
+        - field: "request.prompt"
+          operator: "contains"
+          value: "password"
+
+    actions:
+      - type: "deny"
+        message: "Potential PII detected. Please remove sensitive information from your prompt."
+
+      - type: "log"
+        level: "warning"
+        message: "PII pattern detected in prompt"
+
+  # Rule 3: Block competitor mentions (brand protection)
+  - name: "block-competitor-mentions"
+    description: "Prevent requests about competitor products"
+    priority: 100
+
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "competitor-a"
+        - "competitor-b"
+        - "alternative to our product"
+
+    actions:
+      - type: "deny"
+        message: "Requests about competitor products are not permitted"
+
+      - type: "log"
+        level: "info"
+        message: "Competitor mention blocked"
+
+  # Rule 4: Require business context for code generation
+  - name: "require-context-for-code"
+    description: "Ensure code generation requests include business context"
+    priority: 75
+
+    conditions:
+      all:
+        - field: "request.prompt"
+          operator: "contains_any"
+          value:
+            - "write code"
+            - "generate code"
+            - "implement"
+        - field: "request.prompt"
+          operator: "not_contains"
+          value: "for our application"
+
+    actions:
+      - type: "transform"
+        message: "Adding business context requirement"
+        append_to_prompt: "\n\nNote: Please ensure this code follows our company's coding standards and security guidelines."
+
+      - type: "log"
+        level: "info"
+        message: "Business context added to code generation request"
+
+  # Rule 5: Flag prompts for review
+  - name: "flag-sensitive-topics"
+    description: "Log prompts about sensitive topics for review"
+    priority: 50
+
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "medical advice"
+        - "legal advice"
+        - "financial advice"
+        - "investment"
+
+    actions:
+      - type: "allow"
+        message: "Request permitted but flagged for review"
+
+      - type: "log"
+        level: "warning"
+        message: "Sensitive topic detected - manual review recommended"
+        include_fields:
+          - "request.user.id"
+          - "request.prompt"
+          - "request.model"

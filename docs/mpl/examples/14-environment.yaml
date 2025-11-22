@@ -1,0 +1,72 @@
+# Example 14: Environment-Based Policies
+# Use Case: Apply different policies for production vs development environments
+# Expected Behavior: Strict policies in production, relaxed in development
+
+mpl_version: "1.0"
+name: "environment-policy"
+version: "1.0.0"
+description: "Environment-specific policy enforcement"
+author: "platform-team@example.com"
+tags: ["environment", "production", "development"]
+
+rules:
+  - name: "production-strict-pii-check"
+    description: "Enforce strict PII detection in production"
+    enabled: true
+    conditions:
+      - all:
+          - field: "context.environment"
+            operator: "=="
+            value: "production"
+          - field: "processing.content_analysis.pii_detection.detected"
+            operator: "=="
+            value: true
+    actions:
+      - type: "log"
+        level: "error"
+        message: "PII detected in production: {{ processing.content_analysis.pii_detection.pii_types }}"
+      - type: "alert"
+        webhook: "https://security.example.com/pii-alert"
+        message: "PII detected in production environment"
+        severity: "high"
+      - type: "deny"
+        message: "PII detected in request. Please remove sensitive information."
+        code: "pii_detected"
+
+  - name: "development-warn-pii"
+    description: "Only warn about PII in development"
+    enabled: true
+    conditions:
+      - all:
+          - field: "context.environment"
+            operator: "=="
+            value: "development"
+          - field: "processing.content_analysis.pii_detection.detected"
+            operator: "=="
+            value: true
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "PII detected in development (allowed): {{ processing.content_analysis.pii_detection.pii_types }}"
+      - type: "allow"
+
+  - name: "production-cost-alerts"
+    description: "Alert on all high-cost requests in production"
+    enabled: true
+    conditions:
+      - all:
+          - field: "context.environment"
+            operator: "=="
+            value: "production"
+          - field: "processing.cost_estimate.total_cost"
+            operator: ">"
+            value: 0.50
+    actions:
+      - type: "alert"
+        webhook: "https://alerts.example.com/cost"
+        message: "Production high-cost request: ${{ processing.cost_estimate.total_cost }}"
+        severity: "medium"
+      - type: "log"
+        level: "info"
+        message: "High-cost production request logged"
+      - type: "allow"

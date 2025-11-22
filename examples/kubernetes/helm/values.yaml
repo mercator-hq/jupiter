@@ -1,0 +1,297 @@
+# Default values for mercator-jupiter
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+image:
+  repository: mercator-hq/jupiter
+  pullPolicy: IfNotPresent
+  tag: ""  # Overrides the image tag whose default is the chart appVersion
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9090"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+    - ALL
+
+service:
+  type: ClusterIP
+  port: 8080
+  metricsPort: 9090
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: jupiter.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: jupiter-tls
+  #    hosts:
+  #      - jupiter.example.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - mercator-jupiter
+        topologyKey: kubernetes.io/hostname
+
+# Mercator Jupiter configuration
+config:
+  proxy:
+    listenAddress: "0.0.0.0:8080"
+    readTimeout: "30s"
+    writeTimeout: "30s"
+    idleTimeout: "120s"
+    shutdownTimeout: "30s"
+    maxHeaderBytes: 1048576
+    cors:
+      enabled: true
+      allowedOrigins:
+        - "*"
+      allowedMethods:
+        - "POST"
+        - "OPTIONS"
+      allowedHeaders:
+        - "Authorization"
+        - "Content-Type"
+      maxAge: 3600
+      allowCredentials: true
+
+  providers:
+    openai:
+      baseUrl: "https://api.openai.com/v1"
+      # API key provided via secret
+      timeout: "60s"
+      maxRetries: 3
+      connectionPool:
+        maxIdleConns: 100
+        maxIdleConnsPerHost: 10
+        idleTimeout: "90s"
+      healthCheckInterval: "30s"
+
+    anthropic:
+      baseUrl: "https://api.anthropic.com/v1"
+      # API key provided via secret
+      timeout: "60s"
+      maxRetries: 3
+      connectionPool:
+        maxIdleConns: 100
+        maxIdleConnsPerHost: 10
+        idleTimeout: "90s"
+      healthCheckInterval: "30s"
+
+  policy:
+    mode: "file"
+    filePath: "/app/policies/policy.yaml"
+    validation:
+      enabled: true
+      strict: true
+
+  evidence:
+    enabled: true
+    backend: "sqlite"
+    sqlite:
+      path: "/app/data/evidence.db"
+    retentionDays: 90
+    pruneInterval: "24h"
+
+  processing:
+    enrichRequests: true
+    estimateCosts: true
+    analyzeContent: true
+
+  routing:
+    strategy: "round-robin"
+    stickyRouting: false
+    healthCheckInterval: "30s"
+    failover:
+      enabled: true
+      maxRetries: 2
+      retryDelay: "1s"
+
+  limits:
+    budgets:
+      enabled: true
+      defaultDailyLimit: 100.0
+      enforcement: "hard"
+    rateLimiting:
+      enabled: true
+      defaultRpm: 60
+      defaultTpm: 100000
+      windowSize: "1m"
+
+  telemetry:
+    logging:
+      level: "info"
+      format: "json"
+      addSource: false
+      redactSecrets: true
+    metrics:
+      enabled: true
+      prometheusPath: "/metrics"
+      namespace: "mercator"
+      subsystem: "jupiter"
+    tracing:
+      enabled: false
+      endpoint: ""
+      samplingRate: 0.1
+      serviceName: "mercator-jupiter"
+      serviceVersion: "0.1.0"
+      environment: "production"
+
+  security:
+    tls:
+      enabled: false
+      certFile: ""
+      keyFile: ""
+      minVersion: "1.3"
+    mtls:
+      enabled: false
+      caFile: ""
+      clientAuth: "require"
+
+# Secrets for provider API keys
+secrets:
+  # Set these via --set or in a separate values file
+  openaiApiKey: ""
+  anthropicApiKey: ""
+  # Alternatively, use an existing secret
+  existingSecret: ""
+  existingSecretKeys:
+    openai: "openai-api-key"
+    anthropic: "anthropic-api-key"
+
+# Policy configuration
+policies:
+  # Provide policies inline or mount from ConfigMap
+  inline: |
+    version: "1.0"
+    mpl_version: "1.0"
+    name: "default-policy"
+    policies:
+      - name: "allow-all"
+        description: "Default allow-all policy"
+        rules:
+          - condition: "true"
+            action: "allow"
+
+  # Or use existing ConfigMap
+  existingConfigMap: ""
+  existingConfigMapKey: "policy.yaml"
+
+# Persistence for evidence storage
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  annotations: {}
+
+# Health checks
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Network policy
+networkPolicy:
+  enabled: false
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector: {}
+  egress:
+    - to:
+      - namespaceSelector: {}
+    - to:  # Allow external API calls
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443
+
+# Service monitor for Prometheus Operator
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  relabelings: []
+  metricRelabelings: []

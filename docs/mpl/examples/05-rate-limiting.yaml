@@ -1,0 +1,55 @@
+# Example 5: Rate Limiting by API Key
+# Use Case: Enforce rate limits based on API keys or user IDs
+# Expected Behavior: Requests exceeding rate limits are denied
+
+mpl_version: "1.0"
+name: "rate-limiting"
+version: "1.0.0"
+description: "Enforce rate limits to prevent abuse"
+author: "security-team@example.com"
+tags: ["security", "rate-limiting", "abuse-prevention"]
+
+variables:
+  free_tier_limit: 10
+  premium_tier_limit: 100
+  enterprise_tier_limit: 1000
+
+rules:
+  - name: "rate-limit-free-tier"
+    description: "Enforce 10 requests/hour for free tier users"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.tier"
+        operator: "=="
+        value: "free"
+    actions:
+      - type: "rate_limit"
+        key: "{{ request.user }}"
+        limit: "{{ variables.free_tier_limit }}"
+        window: 3600  # 1 hour in seconds
+
+  - name: "rate-limit-premium-tier"
+    description: "Enforce 100 requests/hour for premium tier users"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.tier"
+        operator: "=="
+        value: "premium"
+    actions:
+      - type: "rate_limit"
+        key: "{{ request.user }}"
+        limit: "{{ variables.premium_tier_limit }}"
+        window: 3600  # 1 hour in seconds
+
+  - name: "rate-limit-enterprise-tier"
+    description: "Enforce 1000 requests/hour for enterprise tier users"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.tier"
+        operator: "=="
+        value: "enterprise"
+    actions:
+      - type: "rate_limit"
+        key: "{{ request.user }}"
+        limit: "{{ variables.enterprise_tier_limit }}"
+        window: 3600  # 1 hour in seconds

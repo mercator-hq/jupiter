@@ -1,0 +1,128 @@
+mpl_version: "1.0"
+name: request-tagging
+description: |
+  Tag requests for monitoring, analytics, and cost allocation.
+  Tags are added to the policy decision and can be used for:
+  - Cost allocation by department or team
+  - Analytics and reporting
+  - Audit trail enrichment
+  - Routing decisions based on metadata
+
+rules:
+  - name: tag-by-model
+    description: "Tag all requests with the model being used"
+    priority: 100
+    match:
+      field:
+        name: "request.model"
+        operator: "exists"
+    actions:
+      - type: tag
+        key: "model"
+        value_from: "request.model"
+
+  - name: tag-by-user
+    description: "Tag requests with user identifier for tracking"
+    priority: 100
+    match:
+      field:
+        name: "request.user"
+        operator: "exists"
+    actions:
+      - type: tag
+        key: "user"
+        value_from: "request.user"
+
+  - name: tag-expensive-models
+    description: "Tag expensive model usage for cost monitoring"
+    priority: 90
+    match:
+      field:
+        name: "request.model"
+        operator: "in"
+        value: ["gpt-4", "gpt-4-turbo", "claude-3-opus-20240229", "claude-3-opus"]
+    actions:
+      - type: tag
+        key: "cost_tier"
+        value: "premium"
+      - type: tag
+        key: "requires_review"
+        value: "true"
+
+  - name: tag-cheap-models
+    description: "Tag cost-effective model usage"
+    priority: 90
+    match:
+      field:
+        name: "request.model"
+        operator: "in"
+        value: ["gpt-3.5-turbo", "claude-3-haiku-20240307", "claude-3-haiku"]
+    actions:
+      - type: tag
+        key: "cost_tier"
+        value: "standard"
+
+  - name: tag-by-model-family
+    description: "Tag requests by model family for analytics"
+    priority: 95
+    match:
+      field:
+        name: "request.model_family"
+        operator: "exists"
+    actions:
+      - type: tag
+        key: "model_family"
+        value_from: "request.model_family"
+
+  - name: tag-high-risk-requests
+    description: "Tag high-risk requests for security monitoring"
+    priority: 85
+    match:
+      field:
+        name: "request.risk_score"
+        operator: ">"
+        value: 7
+    actions:
+      - type: tag
+        key: "risk_level"
+        value: "high"
+      - type: tag
+        key: "security_review"
+        value: "required"
+
+  - name: tag-complex-requests
+    description: "Tag complex requests that may require more resources"
+    priority: 85
+    match:
+      field:
+        name: "request.complexity_score"
+        operator: ">"
+        value: 7
+    actions:
+      - type: tag
+        key: "complexity"
+        value: "high"
+
+  - name: tag-environment
+    description: "Tag all requests with environment (set this based on deployment)"
+    priority: 100
+    match:
+      field:
+        name: "request.model"
+        operator: "exists"
+    actions:
+      - type: tag
+        key: "environment"
+        value: "production"  # Change to "staging", "development" as needed
+
+  - name: tag-pricing-tier
+    description: "Tag requests by pricing tier for billing"
+    priority: 95
+    match:
+      field:
+        name: "request.pricing_tier"
+        operator: "exists"
+    actions:
+      - type: tag
+        key: "pricing_tier"
+        value_from: "request.pricing_tier"

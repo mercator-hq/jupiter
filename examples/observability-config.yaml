@@ -1,0 +1,216 @@
+# Mercator Jupiter - Observability Configuration Example
+#
+# This example demonstrates comprehensive observability configuration including:
+# - Structured logging with PII redaction
+# - Prometheus metrics collection
+# - OpenTelemetry distributed tracing
+# - Health check endpoints
+#
+# Use this as a reference for production deployments with full observability.
+
+# Basic proxy configuration
+proxy:
+  listen_address: "0.0.0.0:8080"
+  timeout: 30s
+
+# Provider configuration (minimal example)
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"  # Load from environment
+    models:
+      - gpt-4
+      - gpt-3.5-turbo
+
+# Telemetry configuration - Full observability stack
+telemetry:
+  # Structured Logging Configuration
+  logging:
+    # Log level: debug, info, warn, error
+    # Use "info" for production, "debug" for troubleshooting
+    level: info
+
+    # Log format: json (machine-readable), text (human-readable)
+    # Use "json" for production (better for log aggregation)
+    format: json
+
+    # Include source file and line number in logs
+    # Useful for debugging but adds overhead
+    add_source: false
+
+    # Automatic PII redaction
+    # Redacts API keys, emails, SSN, IPs, etc.
+    redact_pii: true
+
+    # Async log buffer size
+    # Larger buffer = better performance under load
+    # Smaller buffer = less memory usage
+    buffer_size: 10000
+
+    # Custom PII redaction patterns (optional)
+    # Add custom patterns for application-specific sensitive data
+    redact_patterns:
+      - name: custom_token
+        pattern: "tok_[a-zA-Z0-9]{32}"
+        replacement: "tok_***"
+      - name: internal_id
+        pattern: "INT-[0-9]{8}"
+        replacement: "INT-********"
+
+  # Prometheus Metrics Configuration
+  metrics:
+    # Enable metrics collection
+    enabled: true
+
+    # Metrics endpoint path
+    # Prometheus will scrape this endpoint
+    path: /metrics
+
+    # Metrics namespace and subsystem
+    # Metrics will be prefixed with: {namespace}_{subsystem}_
+    # Example: mercator_jupiter_requests_total
+    namespace: mercator
+    subsystem: jupiter
+
+  # OpenTelemetry Distributed Tracing Configuration
+  tracing:
+    # Enable distributed tracing
+    enabled: true
+
+    # Sampling strategy: always, never, ratio
+    # - always: Sample 100% of requests (development/debugging)
+    # - never: Disable tracing (minimal overhead)
+    # - ratio: Sample percentage of requests (production)
+    sampler: ratio
+
+    # Sample ratio (0.0 to 1.0)
+    # 0.1 = 10% of requests, 1.0 = 100% of requests
+    # Balance between observability and performance/cost
+    sample_ratio: 0.1
+
+    # Exporter type: otlp, jaeger, zipkin
+    # otlp is recommended (OpenTelemetry standard)
+    exporter: otlp
+
+    # Tracing backend endpoint
+    # For OTLP: typically port 4317 (gRPC) or 4318 (HTTP)
+    # For Jaeger: typically port 6831 (UDP) or 14268 (HTTP)
+    endpoint: "localhost:4317"
+
+    # Service name for trace identification
+    # Shows up in tracing UI (Jaeger, Zipkin, etc.)
+    service_name: mercator-jupiter
+
+    # OTLP-specific configuration
+    otlp:
+      # Use insecure connection (no TLS)
+      # Set to false in production with TLS
+      insecure: true
+
+      # Connection timeout
+      timeout: 10s
+
+    # Jaeger-specific configuration (if using Jaeger exporter)
+    jaeger:
+      agent_host: localhost
+      agent_port: 6831
+
+  # Health Check Endpoints Configuration
+  health:
+    # Enable health check endpoints
+    # Kubernetes and monitoring systems need these
+    enabled: true
+
+    # Liveness probe endpoint
+    # Returns 200 if process is alive
+    # Used by Kubernetes to restart dead pods
+    liveness_path: /health
+
+    # Readiness probe endpoint
+    # Returns 200 if system can serve traffic
+    # Returns 503 if degraded (checks all components)
+    # Used by Kubernetes to route traffic
+    readiness_path: /ready
+
+    # Version information endpoint
+    # Returns build version, commit, go version
+    version_path: /version
+
+    # Timeout for individual component health checks
+    # Component checks run concurrently, this is per-check timeout
+    check_timeout: 5s
+
+    # Minimum healthy providers required for readiness
+    # System is "not ready" if fewer providers are healthy
+    min_healthy_providers: 1
+
+# Policy configuration (minimal example)
+policy:
+  mode: file
+  file_path: "./examples/policies/allow-all.yaml"
+
+# Evidence configuration (optional - can be disabled for dev)
+evidence:
+  enabled: false
+
+---
+
+# Deployment Notes:
+#
+# 1. Prometheus Scraping:
+#    Configure Prometheus to scrape the /metrics endpoint:
+#
+#    scrape_configs:
+#      - job_name: 'mercator-jupiter'
+#        static_configs:
+#          - targets: ['localhost:8080']
+#        metrics_path: '/metrics'
+#        scrape_interval: 15s
+#
+# 2. OpenTelemetry Collector:
+#    Deploy an OTLP collector to receive traces:
+#
+#    receivers:
+#      otlp:
+#        protocols:
+#          grpc:
+#            endpoint: 0.0.0.0:4317
+#    exporters:
+#      jaeger:
+#        endpoint: jaeger:14250
+#    service:
+#      pipelines:
+#        traces:
+#          receivers: [otlp]
+#          exporters: [jaeger]
+#
+# 3. Kubernetes Health Checks:
+#    Configure liveness and readiness probes:
+#
+#    livenessProbe:
+#      httpGet:
+#        path: /health
+#        port: 8080
+#      initialDelaySeconds: 10
+#      periodSeconds: 10
+#      timeoutSeconds: 5
+#      failureThreshold: 3
+#
+#    readinessProbe:
+#      httpGet:
+#        path: /ready
+#        port: 8080
+#      initialDelaySeconds: 5
+#      periodSeconds: 5
+#      timeoutSeconds: 5
+#      failureThreshold: 2
+#
+# 4. Log Aggregation:
+#    Send JSON logs to a log aggregation system:
+#    - Loki (Grafana)
+#    - Elasticsearch (ELK stack)
+#    - CloudWatch Logs (AWS)
+#    - Cloud Logging (GCP)
+#
+# 5. Grafana Dashboards:
+#    Import the provided Grafana dashboard (see docs/grafana-dashboard.json)
+#    to visualize metrics, traces, and logs in a unified view.

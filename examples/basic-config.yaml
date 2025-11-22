@@ -1,0 +1,233 @@
+# Mercator Jupiter Configuration Example
+#
+# This file demonstrates a basic configuration for Mercator Jupiter.
+# All settings shown here include their default values unless otherwise noted.
+#
+# Environment variables can override any setting using the format:
+# MERCATOR_SECTION_FIELD (e.g., MERCATOR_PROXY_LISTEN_ADDRESS)
+
+# Proxy server configuration
+proxy:
+  # Address and port for the proxy to listen on
+  # Default: "127.0.0.1:8080"
+  listen_address: "127.0.0.1:8080"
+
+  # Maximum duration for reading the entire request, including the body
+  # Default: 30s
+  read_timeout: "30s"
+
+  # Maximum duration before timing out writes of the response
+  # Default: 30s
+  write_timeout: "30s"
+
+  # Maximum amount of time to wait for the next request when keep-alives are enabled
+  # Default: 120s
+  idle_timeout: "120s"
+
+  # Maximum duration to wait for graceful shutdown
+  # Default: 30s
+  shutdown_timeout: "30s"
+
+  # Maximum number of bytes for request headers (does not limit body size)
+  # Default: 1048576 (1MB)
+  max_header_bytes: 1048576
+
+  # CORS (Cross-Origin Resource Sharing) configuration
+  cors:
+    # Enable CORS
+    # Default: true
+    enabled: true
+
+    # Allowed origins for CORS requests
+    # Use ["*"] to allow all origins (not recommended for production)
+    # Default: ["*"]
+    allowed_origins:
+      - "*"
+
+    # Allowed HTTP methods for CORS requests
+    # Default: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+
+    # Allowed headers for CORS requests
+    # Default: ["Authorization", "Content-Type", "X-Request-ID", "X-User-ID"]
+    allowed_headers:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-ID"
+      - "X-User-ID"
+
+    # Headers that are exposed to the client
+    # Default: ["X-Request-ID"]
+    exposed_headers:
+      - "X-Request-ID"
+
+    # Maximum age (in seconds) for preflight request cache
+    # Default: 3600 (1 hour)
+    max_age: 3600
+
+    # Allow credentials (cookies, authorization headers) in CORS requests
+    # Default: false
+    allow_credentials: false
+
+# LLM provider configurations
+# At least one provider must be configured
+providers:
+  # OpenAI configuration
+  openai:
+    base_url: "https://api.openai.com/v1"
+    # API key should be set via environment variable: MERCATOR_PROVIDERS_OPENAI_API_KEY
+    api_key: "${OPENAI_API_KEY}"
+    timeout: "60s"
+    max_retries: 3
+
+  # Anthropic configuration
+  anthropic:
+    base_url: "https://api.anthropic.com/v1"
+    # API key should be set via environment variable: MERCATOR_PROVIDERS_ANTHROPIC_API_KEY
+    api_key: "${ANTHROPIC_API_KEY}"
+    timeout: "60s"
+    max_retries: 3
+
+# Policy engine configuration
+policy:
+  # Policy loading mode: "file" or "git"
+  # Default: "file"
+  mode: "file"
+
+  # Path to policy file (when mode is "file")
+  # Default: "./policies.yaml"
+  file_path: "./policies.yaml"
+
+  # Git repository URL (when mode is "git")
+  # git_repo: "https://github.com/your-org/policies"
+
+  # Git branch (when mode is "git")
+  # Default: "main"
+  # git_branch: "main"
+
+  # Path within Git repository (when mode is "git")
+  # Default: "policies.yaml"
+  # git_path: "policies.yaml"
+
+  # Watch for policy file changes and reload automatically
+  # Default: false
+  watch: false
+
+  # Policy validation settings
+  validation:
+    # Enable policy validation
+    # Default: true
+    enabled: true
+
+    # Treat validation warnings as errors
+    # Default: false
+    strict: false
+
+# Evidence generation and storage configuration
+evidence:
+  # Enable evidence generation
+  # Default: true
+  enabled: true
+
+  # Storage backend: "sqlite", "postgres", or "s3"
+  # Default: "sqlite"
+  backend: "sqlite"
+
+  # SQLite-specific configuration (when backend is "sqlite")
+  sqlite:
+    # Path to SQLite database file
+    # Default: "./evidence.db"
+    path: "./evidence.db"
+
+  # PostgreSQL-specific configuration (when backend is "postgres")
+  # postgres:
+  #   host: "localhost"
+  #   port: 5432
+  #   database: "mercator"
+  #   user: "mercator"
+  #   # Password should be set via environment variable: MERCATOR_EVIDENCE_POSTGRES_PASSWORD
+  #   password: "${POSTGRES_PASSWORD}"
+  #   ssl_mode: "require"
+
+  # S3-specific configuration (when backend is "s3")
+  # s3:
+  #   bucket: "mercator-evidence"
+  #   region: "us-east-1"
+  #   prefix: "evidence/"
+  #   # Optional custom endpoint for S3-compatible services
+  #   # endpoint: "https://s3.example.com"
+
+  # Number of days to retain evidence records
+  # Default: 90
+  retention_days: 90
+
+  # Path to private key for signing evidence records
+  # If not specified, evidence is not cryptographically signed
+  # signing_key_path: "/path/to/signing-key.pem"
+
+# Telemetry and observability configuration
+telemetry:
+  # Logging configuration
+  logging:
+    # Log level: "debug", "info", "warn", or "error"
+    # Default: "info"
+    level: "info"
+
+    # Log format: "json" or "text"
+    # Default: "json"
+    format: "json"
+
+  # Metrics configuration
+  metrics:
+    # Enable metrics collection
+    # Default: true
+    enabled: true
+
+    # HTTP path for Prometheus metrics endpoint
+    # Default: "/metrics"
+    prometheus_path: "/metrics"
+
+  # Distributed tracing configuration
+  tracing:
+    # Enable distributed tracing
+    # Default: false
+    enabled: false
+
+    # OpenTelemetry collector endpoint
+    # Required when tracing is enabled
+    # endpoint: "localhost:4317"
+
+    # Sampling rate (0.0 to 1.0)
+    # Default: 1.0 (sample all traces)
+    # sampling_rate: 1.0
+
+# Security configuration
+security:
+  # TLS configuration
+  tls:
+    # Enable TLS for the proxy server
+    # Default: false
+    enabled: false
+
+    # Path to TLS certificate file
+    # Required when TLS is enabled
+    # cert_file: "/path/to/cert.pem"
+
+    # Path to TLS private key file
+    # Required when TLS is enabled
+    # key_file: "/path/to/key.pem"
+
+  # Mutual TLS (mTLS) configuration
+  mtls:
+    # Enable mutual TLS (requires TLS to be enabled)
+    # Default: false
+    enabled: false
+
+    # Path to CA certificate for verifying client certificates
+    # Required when mTLS is enabled
+    # ca_file: "/path/to/ca.pem"

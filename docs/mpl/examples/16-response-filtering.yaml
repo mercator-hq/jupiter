@@ -1,0 +1,59 @@
+# Example 16: Response Content Filtering
+# Use Case: Filter and redact sensitive content from LLM responses
+# Expected Behavior: Responses containing PII or sensitive content are redacted
+
+mpl_version: "1.0"
+name: "response-filtering"
+version: "1.0.0"
+description: "Filter and redact sensitive content from responses"
+author: "trust-safety-team@example.com"
+tags: ["safety", "response-filtering", "pii"]
+
+rules:
+  - name: "redact-pii-from-responses"
+    description: "Automatically redact PII detected in LLM responses"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.pii_detection.detected"
+        operator: "=="
+        value: true
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "PII detected in response, redacting: {{ processing.content_analysis.pii_detection.pii_types }}"
+      - type: "redact"
+        fields: ["response.content"]
+        method: "mask"
+        replacement: "[REDACTED]"
+
+  - name: "block-unsafe-responses"
+    description: "Block responses with high-severity unsafe content"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.sensitive_content.severity"
+        operator: "in"
+        value: ["high", "critical"]
+    actions:
+      - type: "log"
+        level: "error"
+        message: "Unsafe response blocked: severity={{ processing.content_analysis.sensitive_content.severity }}"
+      - type: "alert"
+        webhook: "https://trust-safety.example.com/unsafe-response"
+        message: "Unsafe response generated for user {{ request.user }}"
+        severity: "high"
+      - type: "deny"
+        message: "Response blocked due to content policy violation"
+        code: "unsafe_response"
+
+  - name: "warn-negative-sentiment"
+    description: "Log warning for responses with very negative sentiment"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.sentiment.score"
+        operator: "<"
+        value: -0.7
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Very negative sentiment in response: score={{ processing.content_analysis.sentiment.score }}"
+      - type: "allow"

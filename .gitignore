@@ -1,0 +1,70 @@
+# Workspace directory for experimentation
+workspace/
+
+# Internal working directories (not for public repo)
+Task-Notes/
+Old/
+MVP-Planned-Features.md
+CLAUDE.md
+
+# Binaries
+bin/
+/mercator
+/policy-engine-example
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries and output
+*.test
+*.out
+coverage*.out
+coverage.html
+*.prof
+
+# Evidence database (development/testing artifacts)
+*.db
+*.db-shm
+*.db-wal
+evidence.db*
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment files with secrets
+.env
+.env.local
+*.env
+
+# Build artifacts
+dist/
+build/
+_obj/
+_test/
+
+# Vendor (if not using modules)
+vendor/
+
+# Go workspace file
+go.work
+
+# Security scan results
+*.sarif
+security-report*.json

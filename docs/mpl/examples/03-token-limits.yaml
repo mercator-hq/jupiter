@@ -1,0 +1,39 @@
+# Example 3: Token Budget Enforcement
+# Use Case: Enforce token limits per request and daily budgets
+# Expected Behavior: Requests exceeding limits are denied
+
+mpl_version: "1.0"
+name: "token-limits"
+version: "1.0.0"
+description: "Enforce token budgets to control costs"
+author: "platform-team@example.com"
+tags: ["cost-control", "budgets"]
+
+variables:
+  max_tokens_per_request: 8000
+  max_daily_tokens: 100000
+
+rules:
+  - name: "enforce-request-token-limit"
+    description: "Block requests that exceed per-request token limit"
+    enabled: true
+    conditions:
+      - field: "processing.token_estimate.total_tokens"
+        operator: ">"
+        value: "{{ variables.max_tokens_per_request }}"
+    actions:
+      - type: "deny"
+        message: "Request exceeds maximum token limit of {{ variables.max_tokens_per_request }}"
+        code: "token_limit_exceeded"
+
+  - name: "enforce-daily-budget"
+    description: "Block requests when daily token budget is exhausted"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.daily_token_usage"
+        operator: ">"
+        value: "{{ variables.max_daily_tokens }}"
+    actions:
+      - type: "deny"
+        message: "Daily token budget of {{ variables.max_daily_tokens }} exceeded"
+        code: "daily_budget_exceeded"

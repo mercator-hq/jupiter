@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mercator-jupiter.configMapName" . }}
+  labels:
+    {{- include "mercator-jupiter.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    proxy:
+      listen_address: {{ .Values.config.proxy.listenAddress | quote }}
+      read_timeout: {{ .Values.config.proxy.readTimeout | quote }}
+      write_timeout: {{ .Values.config.proxy.writeTimeout | quote }}
+      idle_timeout: {{ .Values.config.proxy.idleTimeout | quote }}
+      shutdown_timeout: {{ .Values.config.proxy.shutdownTimeout | quote }}
+      max_header_bytes: {{ .Values.config.proxy.maxHeaderBytes }}
+      {{- if .Values.config.proxy.cors.enabled }}
+      cors:
+        enabled: true
+        allowed_origins:
+          {{- toYaml .Values.config.proxy.cors.allowedOrigins | nindent 10 }}
+        allowed_methods:
+          {{- toYaml .Values.config.proxy.cors.allowedMethods | nindent 10 }}
+        allowed_headers:
+          {{- toYaml .Values.config.proxy.cors.allowedHeaders | nindent 10 }}
+        max_age: {{ .Values.config.proxy.cors.maxAge }}
+        allow_credentials: {{ .Values.config.proxy.cors.allowCredentials }}
+      {{- end }}
+
+    providers:
+      openai:
+        base_url: {{ .Values.config.providers.openai.baseUrl | quote }}
+        api_key: "${OPENAI_API_KEY}"
+        timeout: {{ .Values.config.providers.openai.timeout | quote }}
+        max_retries: {{ .Values.config.providers.openai.maxRetries }}
+        connection_pool:
+          max_idle_conns: {{ .Values.config.providers.openai.connectionPool.maxIdleConns }}
+          max_idle_conns_per_host: {{ .Values.config.providers.openai.connectionPool.maxIdleConnsPerHost }}
+          idle_timeout: {{ .Values.config.providers.openai.connectionPool.idleTimeout | quote }}
+        health_check_interval: {{ .Values.config.providers.openai.healthCheckInterval | quote }}
+
+      anthropic:
+        base_url: {{ .Values.config.providers.anthropic.baseUrl | quote }}
+        api_key: "${ANTHROPIC_API_KEY}"
+        timeout: {{ .Values.config.providers.anthropic.timeout | quote }}
+        max_retries: {{ .Values.config.providers.anthropic.maxRetries }}
+        connection_pool:
+          max_idle_conns: {{ .Values.config.providers.anthropic.connectionPool.maxIdleConns }}
+          max_idle_conns_per_host: {{ .Values.config.providers.anthropic.connectionPool.maxIdleConnsPerHost }}
+          idle_timeout: {{ .Values.config.providers.anthropic.connectionPool.idleTimeout | quote }}
+        health_check_interval: {{ .Values.config.providers.anthropic.healthCheckInterval | quote }}
+
+    policy:
+      mode: {{ .Values.config.policy.mode | quote }}
+      file_path: {{ .Values.config.policy.filePath | quote }}
+      validation:
+        enabled: {{ .Values.config.policy.validation.enabled }}
+        strict: {{ .Values.config.policy.validation.strict }}
+
+    evidence:
+      enabled: {{ .Values.config.evidence.enabled }}
+      backend: {{ .Values.config.evidence.backend | quote }}
+      sqlite:
+        path: {{ .Values.config.evidence.sqlite.path | quote }}
+      retention_days: {{ .Values.config.evidence.retentionDays }}
+      prune_interval: {{ .Values.config.evidence.pruneInterval | quote }}
+
+    processing:
+      enrich_requests: {{ .Values.config.processing.enrichRequests }}
+      estimate_costs: {{ .Values.config.processing.estimateCosts }}
+      analyze_content: {{ .Values.config.processing.analyzeContent }}
+
+    routing:
+      strategy: {{ .Values.config.routing.strategy | quote }}
+      sticky_routing: {{ .Values.config.routing.stickyRouting }}
+      health_check_interval: {{ .Values.config.routing.healthCheckInterval | quote }}
+      failover:
+        enabled: {{ .Values.config.routing.failover.enabled }}
+        max_retries: {{ .Values.config.routing.failover.maxRetries }}
+        retry_delay: {{ .Values.config.routing.failover.retryDelay | quote }}
+
+    limits:
+      budgets:
+        enabled: {{ .Values.config.limits.budgets.enabled }}
+        default_daily_limit: {{ .Values.config.limits.budgets.defaultDailyLimit }}
+        enforcement: {{ .Values.config.limits.budgets.enforcement | quote }}
+      rate_limiting:
+        enabled: {{ .Values.config.limits.rateLimiting.enabled }}
+        default_rpm: {{ .Values.config.limits.rateLimiting.defaultRpm }}
+        default_tpm: {{ .Values.config.limits.rateLimiting.defaultTpm }}
+        window_size: {{ .Values.config.limits.rateLimiting.windowSize | quote }}
+
+    telemetry:
+      logging:
+        level: {{ .Values.config.telemetry.logging.level | quote }}
+        format: {{ .Values.config.telemetry.logging.format | quote }}
+        add_source: {{ .Values.config.telemetry.logging.addSource }}
+        redact_secrets: {{ .Values.config.telemetry.logging.redactSecrets }}
+      metrics:
+        enabled: {{ .Values.config.telemetry.metrics.enabled }}
+        prometheus_path: {{ .Values.config.telemetry.metrics.prometheusPath | quote }}
+        namespace: {{ .Values.config.telemetry.metrics.namespace | quote }}
+        subsystem: {{ .Values.config.telemetry.metrics.subsystem | quote }}
+      {{- if .Values.config.telemetry.tracing.enabled }}
+      tracing:
+        enabled: true
+        endpoint: {{ .Values.config.telemetry.tracing.endpoint | quote }}
+        sampling_rate: {{ .Values.config.telemetry.tracing.samplingRate }}
+        service_name: {{ .Values.config.telemetry.tracing.serviceName | quote }}
+        service_version: {{ .Values.config.telemetry.tracing.serviceVersion | quote }}
+        environment: {{ .Values.config.telemetry.tracing.environment | quote }}
+      {{- end }}
+
+    {{- if or .Values.config.security.tls.enabled .Values.config.security.mtls.enabled }}
+    security:
+      {{- if .Values.config.security.tls.enabled }}
+      tls:
+        enabled: true
+        cert_file: {{ .Values.config.security.tls.certFile | quote }}
+        key_file: {{ .Values.config.security.tls.keyFile | quote }}
+        min_version: {{ .Values.config.security.tls.minVersion | quote }}
+      {{- end }}
+      {{- if .Values.config.security.mtls.enabled }}
+      mtls:
+        enabled: true
+        ca_file: {{ .Values.config.security.mtls.caFile | quote }}
+        client_auth: {{ .Values.config.security.mtls.clientAuth | quote }}
+      {{- end }}
+    {{- end }}

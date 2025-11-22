@@ -1,0 +1,150 @@
+# Mercator Jupiter - Request/Response Processing Configuration Example
+# This file demonstrates all available configuration options for the processing feature
+
+processing:
+  # Token estimation configuration
+  tokens:
+    estimator: "simple"          # Token estimator type: "simple" (character-based)
+    cache_size: 100              # Number of tokenizer instances to cache
+
+    # Model-specific characters-per-token ratios
+    # Lower values = more tokens for same text (more conservative estimates)
+    models:
+      gpt-4: 4.0                 # GPT-4 models: ~4 characters per token
+      gpt-3.5-turbo: 4.0         # GPT-3.5 models: ~4 characters per token
+      claude-3-opus: 3.5         # Claude 3 Opus: ~3.5 characters per token
+      claude-3-sonnet: 3.5       # Claude 3 Sonnet: ~3.5 characters per token
+      claude-3-haiku: 3.5        # Claude 3 Haiku: ~3.5 characters per token
+      default: 4.0               # Default for unknown models
+
+  # Cost calculation configuration
+  costs:
+    # Provider and model-specific pricing (USD per 1K tokens)
+    pricing:
+      openai:
+        gpt-4:
+          prompt: 0.03           # $0.03 per 1K input tokens
+          completion: 0.06       # $0.06 per 1K output tokens
+        gpt-4-turbo:
+          prompt: 0.01           # GPT-4 Turbo is cheaper
+          completion: 0.03
+        gpt-3.5-turbo:
+          prompt: 0.0005         # GPT-3.5 Turbo is very cheap
+          completion: 0.0015
+
+      anthropic:
+        claude-3-opus:
+          prompt: 0.015          # Claude 3 Opus pricing
+          completion: 0.075
+        claude-3-sonnet:
+          prompt: 0.003          # Claude 3 Sonnet pricing
+          completion: 0.015
+        claude-3-haiku:
+          prompt: 0.00025        # Claude 3 Haiku pricing
+          completion: 0.00125
+
+      # Default pricing for unknown providers/models
+      default:
+        default:
+          prompt: 0.001          # Conservative default
+          completion: 0.002
+
+  # Content analysis configuration
+  content:
+    # PII (Personally Identifiable Information) detection
+    pii:
+      enabled: true              # Enable PII detection
+      redact_in_logs: true       # Redact detected PII from logs
+      types:                     # PII types to detect
+        - email                  # Email addresses
+        - phone                  # Phone numbers (US and international)
+        - ssn                    # Social Security Numbers
+        - credit_card            # Credit card numbers
+        - ip_address             # IP addresses
+
+    # Sensitive content detection
+    sensitive:
+      enabled: true              # Enable sensitive content detection
+      severity_threshold: "medium"  # Minimum severity: low, medium, high
+      categories:                # Content categories to detect
+        - profanity              # Profane language
+        - violence               # Violent content
+        - hate_speech            # Hate speech
+        - adult_content          # Adult/explicit content
+
+    # Prompt injection detection
+    injection:
+      enabled: true              # Enable prompt injection detection
+      confidence_threshold: 0.7  # Minimum confidence (0.0-1.0)
+      patterns:                  # Injection patterns to detect
+        - "ignore previous instructions"
+        - "disregard system prompt"
+        - "you are now"
+        - "new instructions"
+        - "forget everything"
+        - "override directive"
+        - "bypass restriction"
+
+  # Conversation analysis configuration
+  conversation:
+    # Model-specific context window limits (in tokens)
+    max_context_window:
+      gpt-4: 8192                # GPT-4: 8K tokens
+      gpt-4-turbo: 128000        # GPT-4 Turbo: 128K tokens
+      gpt-3.5-turbo: 4096        # GPT-3.5 Turbo: 4K tokens
+      claude-3-opus: 200000      # Claude 3 Opus: 200K tokens
+      claude-3-sonnet: 200000    # Claude 3 Sonnet: 200K tokens
+      claude-3-haiku: 200000     # Claude 3 Haiku: 200K tokens
+      default: 4096              # Default for unknown models
+
+    warn_threshold: 0.8          # Warn when >80% of context window used
+
+# Example: Minimal configuration (all defaults will be applied)
+# processing:
+#   tokens:
+#     estimator: "simple"
+#   costs:
+#     pricing: {}  # Use built-in defaults
+#   content:
+#     pii:
+#       enabled: true
+#     sensitive:
+#       enabled: true
+#     injection:
+#       enabled: true
+
+# Example: Disable all content analysis
+# processing:
+#   tokens:
+#     estimator: "simple"
+#   content:
+#     pii:
+#       enabled: false
+#     sensitive:
+#       enabled: false
+#     injection:
+#       enabled: false
+
+# Example: Custom pricing for enterprise OpenAI account
+# processing:
+#   costs:
+#     pricing:
+#       openai:
+#         gpt-4:
+#           prompt: 0.025      # Negotiated enterprise pricing
+#           completion: 0.05
+
+# Example: Stricter PII detection
+# processing:
+#   content:
+#     pii:
+#       enabled: true
+#       redact_in_logs: true
+#       types:
+#         - email
+#         - phone
+#         - ssn
+#         - credit_card
+#         - ip_address
+#         - passport          # Add custom PII types
+#         - license_plate

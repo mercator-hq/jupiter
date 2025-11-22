@@ -1,0 +1,310 @@
+# Production Configuration for Mercator Jupiter
+#
+# This configuration is optimized for production deployments.
+# Features: TLS, strict validation, PostgreSQL, Git-based policies,
+#           comprehensive observability, budget enforcement
+#
+# Prerequisites:
+#   - TLS certificates generated
+#   - PostgreSQL database created
+#   - Git repository with policies
+#   - Environment variables set
+#
+# To use:
+#   1. Set all required environment variables (see below)
+#   2. Generate TLS certificates (see docs/CERTIFICATES.md)
+#   3. Create PostgreSQL database
+#   4. Run: mercator run --config examples/configs/production.yaml
+
+# Proxy server configuration
+proxy:
+  # Listen on all interfaces
+  listen_address: "0.0.0.0:8080"
+
+  # Production timeouts
+  read_timeout: "30s"
+  write_timeout: "30s"
+  idle_timeout: "120s"
+
+  # Graceful shutdown timeout (wait for in-flight requests)
+  shutdown_timeout: "30s"
+
+  # Maximum header size
+  max_header_bytes: 1048576  # 1MB
+
+  # CORS configuration for production
+  cors:
+    enabled: true
+
+    # Specific origins only (not wildcard)
+    allowed_origins:
+      - "https://app.example.com"
+      - "https://dashboard.example.com"
+
+    allowed_methods:
+      - "POST"
+      - "OPTIONS"
+
+    allowed_headers:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-ID"
+      - "X-User-ID"
+      - "X-Team-ID"
+
+    exposed_headers:
+      - "X-Request-ID"
+
+    max_age: 3600
+    allow_credentials: true
+
+# Multi-provider configuration
+providers:
+  # OpenAI primary provider
+  openai:
+    base_url: "https://api.openai.com/v1"
+    api_key: "${OPENAI_API_KEY}"
+    timeout: "60s"
+    max_retries: 3
+
+    # Connection pooling
+    connection_pool:
+      max_idle_conns: 100
+      max_idle_conns_per_host: 10
+      idle_timeout: "90s"
+
+    # Health checking
+    health_check_interval: "30s"
+
+  # Anthropic secondary provider
+  anthropic:
+    base_url: "https://api.anthropic.com/v1"
+    api_key: "${ANTHROPIC_API_KEY}"
+    timeout: "60s"
+    max_retries: 3
+
+    connection_pool:
+      max_idle_conns: 100
+      max_idle_conns_per_host: 10
+      idle_timeout: "90s"
+
+    health_check_interval: "30s"
+
+# Git-based policy management
+policy:
+  # GitOps mode
+  mode: "git"
+
+  # Git repository with policies
+  git_repo: "${POLICY_GIT_REPO}"
+  git_branch: "production"
+  git_path: "policies/production.yaml"
+
+  # Poll for updates every minute
+  git_poll_interval: "60s"
+
+  # Git authentication (if private repo)
+  # git_username: "${GIT_USERNAME}"
+  # git_password: "${GIT_TOKEN}"
+
+  # Strict validation
+  validation:
+    enabled: true
+    strict: true
+
+# Evidence storage - PostgreSQL for production
+evidence:
+  enabled: true
+  backend: "postgres"
+
+  # PostgreSQL configuration
+  postgres:
+    host: "${POSTGRES_HOST}"
+    port: 5432
+    database: "mercator_evidence"
+    user: "mercator"
+    password: "${POSTGRES_PASSWORD}"
+    ssl_mode: "require"
+
+    # Connection pool
+    max_open_conns: 50
+    max_idle_conns: 10
+    conn_max_lifetime: "1h"
+
+  # Retention policy (90 days for compliance)
+  retention_days: 90
+
+  # Prune old records daily at 2 AM
+  prune_interval: "24h"
+
+  # Cryptographic signing with Ed25519
+  signing_key_path: "${SIGNING_KEY_PATH}"
+
+# Request/response processing
+processing:
+  # Enrich requests with metadata
+  enrich_requests: true
+
+  # Cost estimation enabled
+  estimate_costs: true
+
+  # Content analysis
+  analyze_content: true
+
+# Intelligent routing
+routing:
+  # Cost-optimized routing strategy
+  strategy: "least-cost"
+
+  # Sticky routing by user
+  sticky_routing: true
+  sticky_key: "user_id"
+
+  # Health check interval
+  health_check_interval: "30s"
+
+  # Failover configuration
+  failover:
+    enabled: true
+    max_retries: 2
+    retry_delay: "1s"
+
+# Budget and rate limiting
+limits:
+  # Budget enforcement
+  budgets:
+    enabled: true
+
+    # Default daily budget per user
+    default_daily_limit: 100.0
+
+    # Hard enforcement (block when exceeded)
+    enforcement: "hard"
+
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+
+    # Default rate limits
+    default_rpm: 60        # Requests per minute
+    default_tpm: 100000    # Tokens per minute
+
+    # Window size
+    window_size: "1m"
+
+# Comprehensive telemetry
+telemetry:
+  # Logging configuration
+  logging:
+    # Info level for production
+    level: "info"
+
+    # JSON format for log aggregation
+    format: "json"
+
+    # Include caller information
+    add_source: false
+
+    # Redact sensitive data
+    redact_secrets: true
+
+  # Prometheus metrics
+  metrics:
+    enabled: true
+
+    # Metrics endpoint
+    prometheus_path: "/metrics"
+
+    # Expose on different port (optional)
+    # prometheus_port: 9090
+
+    # Metric namespaces
+    namespace: "mercator"
+    subsystem: "jupiter"
+
+  # Distributed tracing with OpenTelemetry
+  tracing:
+    enabled: true
+
+    # OpenTelemetry collector endpoint
+    endpoint: "${OTEL_ENDPOINT}"
+
+    # Sampling rate (0.0 to 1.0)
+    sampling_rate: 0.1  # Sample 10% of traces
+
+    # Trace attributes
+    service_name: "mercator-jupiter"
+    service_version: "0.1.0"
+    environment: "production"
+
+# Security configuration
+security:
+  # TLS enabled
+  tls:
+    enabled: true
+
+    # TLS certificate and key
+    cert_file: "${TLS_CERT_PATH}"
+    key_file: "${TLS_KEY_PATH}"
+
+    # TLS version
+    min_version: "1.3"
+
+    # Cipher suites (optional, defaults to secure ones)
+    # cipher_suites: []
+
+  # Mutual TLS for client authentication
+  mtls:
+    enabled: true
+
+    # CA certificate for verifying clients
+    ca_file: "${TLS_CA_PATH}"
+
+    # Client certificate verification
+    client_auth: "require"
+
+  # API key authentication
+  api_keys:
+    # Production API key
+    - key: "${API_KEY_PRODUCTION}"
+      name: "production"
+      metadata:
+        environment: "production"
+        team: "platform"
+
+    # Staging API key
+    - key: "${API_KEY_STAGING}"
+      name: "staging"
+      metadata:
+        environment: "staging"
+        team: "platform"
+
+# Required environment variables:
+#
+# Provider credentials:
+#   - OPENAI_API_KEY
+#   - ANTHROPIC_API_KEY
+#
+# Database:
+#   - POSTGRES_HOST
+#   - POSTGRES_PASSWORD
+#
+# Git repository:
+#   - POLICY_GIT_REPO
+#   - GIT_USERNAME (if private)
+#   - GIT_TOKEN (if private)
+#
+# Cryptography:
+#   - SIGNING_KEY_PATH
+#
+# TLS/mTLS:
+#   - TLS_CERT_PATH
+#   - TLS_KEY_PATH
+#   - TLS_CA_PATH
+#
+# API keys:
+#   - API_KEY_PRODUCTION
+#   - API_KEY_STAGING
+#
+# Observability:
+#   - OTEL_ENDPOINT

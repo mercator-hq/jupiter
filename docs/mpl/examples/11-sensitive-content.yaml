@@ -1,0 +1,58 @@
+# Example 11: Sensitive Content Filtering
+# Use Case: Filter requests and responses for sensitive or inappropriate content
+# Expected Behavior: Block high-severity sensitive content, log medium-severity
+
+mpl_version: "1.0"
+name: "sensitive-content-filter"
+version: "1.0.0"
+description: "Filter sensitive and inappropriate content"
+author: "trust-safety-team@example.com"
+tags: ["safety", "content-moderation"]
+
+rules:
+  - name: "block-critical-sensitive-content"
+    description: "Block requests with critical sensitive content"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.sensitive_content.severity"
+        operator: "=="
+        value: "critical"
+    actions:
+      - type: "log"
+        level: "error"
+        message: "Critical sensitive content blocked: categories={{ processing.content_analysis.sensitive_content.categories }}"
+      - type: "alert"
+        webhook: "https://trust-safety.example.com/alerts"
+        message: "Critical sensitive content from user {{ request.user }}"
+        severity: "critical"
+      - type: "deny"
+        message: "Request blocked: inappropriate content detected"
+        code: "sensitive_content"
+
+  - name: "block-high-sensitive-content"
+    description: "Block requests with high-severity sensitive content"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.sensitive_content.severity"
+        operator: "=="
+        value: "high"
+    actions:
+      - type: "log"
+        level: "error"
+        message: "High-severity sensitive content blocked: categories={{ processing.content_analysis.sensitive_content.categories }}"
+      - type: "deny"
+        message: "Request blocked: content policy violation"
+        code: "sensitive_content"
+
+  - name: "warn-medium-sensitive-content"
+    description: "Log warning for medium-severity sensitive content"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.sensitive_content.severity"
+        operator: "=="
+        value: "medium"
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Medium-severity sensitive content: categories={{ processing.content_analysis.sensitive_content.categories }}"
+      - type: "allow"

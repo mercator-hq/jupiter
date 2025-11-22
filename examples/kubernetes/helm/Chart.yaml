@@ -1,0 +1,19 @@
+apiVersion: v2
+name: mercator-jupiter
+description: GitOps-native LLM governance runtime and policy engine
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - llm
+  - governance
+  - policy
+  - proxy
+  - ai
+home: https://github.com/mercator-hq/jupiter
+sources:
+  - https://github.com/mercator-hq/jupiter
+maintainers:
+  - name: Mercator Team
+    email: support@mercator.io
+icon: https://raw.githubusercontent.com/mercator-hq/jupiter/main/docs/assets/logo.png

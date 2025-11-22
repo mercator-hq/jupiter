@@ -1,0 +1,44 @@
+# Example 7: Cost Control
+# Use Case: Enforce cost budgets and alert on high-cost requests
+# Expected Behavior: High-cost requests trigger alerts, budget violations are blocked
+
+mpl_version: "1.0"
+name: "cost-control"
+version: "1.0.0"
+description: "Enforce cost budgets and alert on expensive requests"
+author: "finance-team@example.com"
+tags: ["cost-control", "budgets", "alerts"]
+
+variables:
+  alert_cost_threshold: 1.00  # $1.00 per request
+  daily_cost_limit: 100.00    # $100 per day
+
+rules:
+  - name: "alert-high-cost-requests"
+    description: "Alert on requests estimated to cost more than threshold"
+    enabled: true
+    conditions:
+      - field: "processing.cost_estimate.total_cost"
+        operator: ">"
+        value: "{{ variables.alert_cost_threshold }}"
+    actions:
+      - type: "alert"
+        webhook: "https://alerts.example.com/high-cost"
+        message: "High cost request: ${{ processing.cost_estimate.total_cost }} from user {{ request.user }}"
+        severity: "medium"
+      - type: "log"
+        level: "warn"
+        message: "High cost request: ${{ processing.cost_estimate.total_cost }}"
+      - type: "allow"
+
+  - name: "enforce-daily-cost-budget"
+    description: "Block requests when daily cost budget is exceeded"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.daily_cost"
+        operator: ">"
+        value: "{{ variables.daily_cost_limit }}"
+    actions:
+      - type: "deny"
+        message: "Daily cost budget of ${{ variables.daily_cost_limit }} exceeded"
+        code: "budget_exceeded"

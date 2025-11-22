@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+Task-Notes/
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+mercator
+*.exe
+*.test
+*.out
+*.prof
+coverage.out
+coverage.html
+
+# Data
+*.db
+*.db-shm
+*.db-wal
+evidence.db*
+data/
+
+# Configuration
+config.yaml
+*.env
+.env*
+
+# Examples
+examples/
+Old/
+
+# Test files
+*_test.go
+test/
+
+# Dependencies (will be downloaded in build)
+vendor/

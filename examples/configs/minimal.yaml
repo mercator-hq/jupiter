@@ -1,0 +1,38 @@
+# Minimal Mercator Jupiter Configuration
+#
+# This is the absolute minimum configuration needed to run Mercator Jupiter.
+# Suitable for: Quick testing, local development, learning
+#
+# To use:
+#   1. Set environment variable: export OPENAI_API_KEY="your-key"
+#   2. Create a policies.yaml file (see examples/policies/)
+#   3. Run: mercator run --config examples/configs/minimal.yaml
+
+# Proxy server - where Jupiter listens
+proxy:
+  listen_address: "127.0.0.1:8080"
+
+# At least one provider is required
+providers:
+  openai:
+    base_url: "https://api.openai.com/v1"
+    api_key: "${OPENAI_API_KEY}"
+    timeout: "60s"
+
+# Policy configuration
+policy:
+  mode: "file"
+  file_path: "policies.yaml"
+
+# Evidence storage (audit trail)
+evidence:
+  enabled: true
+  backend: "sqlite"
+  sqlite:
+    path: "evidence.db"
+
+# Logging
+telemetry:
+  logging:
+    level: "info"
+    format: "json"

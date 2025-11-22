@@ -1,0 +1,108 @@
+# Mercator Jupiter - Budget and Rate Limiting Configuration Example
+#
+# This example demonstrates how to configure budget tracking and rate limiting
+# for different API keys, users, and teams.
+
+limits:
+  # Budget tracking configuration
+  budgets:
+    enabled: true
+
+    # Alert when reaching 80% of budget
+    alert_threshold: 0.8
+
+    # Per-API key budgets
+    by_api_key:
+      "api-key-prod-123":
+        hourly: 10.00    # $10/hour
+        daily: 200.00    # $200/day
+        monthly: 5000.00 # $5000/month
+
+      "api-key-dev-456":
+        hourly: 1.00
+        daily: 10.00
+        monthly: 100.00
+
+    # Per-user budgets
+    by_user:
+      "alice@example.com":
+        daily: 50.00
+        monthly: 1000.00
+
+      "bob@example.com":
+        daily: 100.00
+        monthly: 2500.00
+
+    # Per-team budgets
+    by_team:
+      "engineering":
+        daily: 500.00
+        monthly: 10000.00
+
+      "research":
+        daily: 1000.00
+        monthly: 25000.00
+
+  # Rate limiting configuration
+  rate_limits:
+    enabled: true
+
+    # Per-API key rate limits
+    by_api_key:
+      "api-key-prod-123":
+        requests_per_second: 10
+        requests_per_minute: 500
+        requests_per_hour: 10000
+        tokens_per_minute: 100000   # 100K tokens/min
+        tokens_per_hour: 1000000    # 1M tokens/hour
+        max_concurrent: 20
+
+      "api-key-dev-456":
+        requests_per_second: 1
+        requests_per_minute: 50
+        max_concurrent: 5
+
+    # Per-user rate limits
+    by_user:
+      "alice@example.com":
+        requests_per_minute: 100
+        tokens_per_hour: 500000
+        max_concurrent: 10
+
+    # Per-team rate limits
+    by_team:
+      "engineering":
+        requests_per_second: 100
+        tokens_per_minute: 1000000
+        max_concurrent: 100
+
+  # Enforcement actions
+  enforcement:
+    # Action when limit exceeded: block, queue, downgrade, alert
+    action: block
+
+    # Queue configuration (if action=queue)
+    queue_depth: 100
+    queue_timeout: 30s
+
+    # Model downgrade mapping (if action=downgrade)
+    model_downgrades:
+      "gpt-4": "gpt-4-turbo"
+      "gpt-4-turbo": "gpt-3.5-turbo"
+      "claude-3-opus": "claude-3-sonnet"
+      "claude-3-sonnet": "claude-3-haiku"
+
+  # Storage configuration
+  storage:
+    # Backend: memory, sqlite
+    backend: sqlite
+
+    # SQLite configuration
+    sqlite:
+      path: /var/lib/mercator/limits.db
+      snapshot_interval: 5m
+
+    # Memory configuration
+    memory:
+      max_entries: 100000
+      cleanup_interval: 1m

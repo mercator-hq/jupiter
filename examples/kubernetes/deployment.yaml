@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mercator-jupiter
+  labels:
+    app: mercator-jupiter
+    version: v0.1.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mercator-jupiter
+  template:
+    metadata:
+      labels:
+        app: mercator-jupiter
+        version: v0.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: mercator-jupiter
+      containers:
+      - name: mercator
+        image: mercator-hq/jupiter:v0.1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        # Provider API keys from secrets
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mercator-secrets
+              key: openai-api-key
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mercator-secrets
+              key: anthropic-api-key
+        # Configuration from ConfigMap
+        - name: MERCATOR_PROXY_LISTEN_ADDRESS
+          value: "0.0.0.0:8080"
+        - name: MERCATOR_TELEMETRY_LOGGING_LEVEL
+          value: "info"
+        - name: MERCATOR_TELEMETRY_LOGGING_FORMAT
+          value: "json"
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+        - name: policies
+          mountPath: /app/policies
+          readOnly: true
+        - name: data
+          mountPath: /app/data
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+        livenessProbe:
+          exec:
+            command:
+            - /app/mercator
+            - version
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config
+        configMap:
+          name: mercator-config
+      - name: policies
+        configMap:
+          name: mercator-policies
+      - name: data
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - mercator-jupiter
+              topologyKey: kubernetes.io/hostname

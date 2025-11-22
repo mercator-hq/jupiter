@@ -1,0 +1,30 @@
+mpl_version: "1.0"
+name: "policy-with-variables"
+version: "1.0.0"
+description: "Policy using variables"
+
+variables:
+  max_tokens: 4000
+  allowed_models:
+    - "gpt-4"
+    - "claude-3-sonnet"
+  risk_threshold: 8
+
+rules:
+  - name: "token-limit"
+    conditions:
+      - field: "processing.token_estimate.total_tokens"
+        operator: ">"
+        value: "{{ variables.max_tokens }}"
+    actions:
+      - type: "deny"
+        message: "Exceeds {{ variables.max_tokens }} tokens"
+
+  - name: "model-allowlist"
+    conditions:
+      - field: "request.model"
+        operator: "not_in"
+        value: "{{ variables.allowed_models }}"
+    actions:
+      - type: "deny"
+        message: "Model not allowed"

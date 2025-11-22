@@ -1,0 +1,28 @@
+# Example 2: PII Detection and Redaction
+# Use Case: Detect PII in requests and redact sensitive information
+# Expected Behavior: Requests with PII are logged and redacted before forwarding
+
+mpl_version: "1.0"
+name: "pii-protection"
+version: "1.0.0"
+description: "Detect and redact PII from LLM requests"
+author: "compliance-team@example.com"
+tags: ["compliance", "pii", "privacy"]
+
+rules:
+  - name: "detect-and-redact-pii"
+    description: "Log and redact PII when detected in request messages"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.pii_detection.detected"
+        operator: "=="
+        value: true
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "PII detected: {{ processing.content_analysis.pii_detection.types }}"
+      - type: "redact"
+        fields: ["request.messages"]
+        method: "mask"
+        replacement: "[REDACTED]"
+      - type: "allow"

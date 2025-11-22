@@ -1,0 +1,46 @@
+# Example 15: Model Allowlist
+# Use Case: Restrict usage to approved models only
+# Expected Behavior: Only allowlisted models can be used
+
+mpl_version: "1.0"
+name: "model-allowlist"
+version: "1.0.0"
+description: "Enforce approved model usage"
+author: "security-team@example.com"
+tags: ["security", "model-control", "allowlist"]
+
+variables:
+  allowed_models:
+    - "gpt-4"
+    - "gpt-3.5-turbo"
+    - "claude-3-sonnet"
+    - "claude-3-haiku"
+
+rules:
+  - name: "enforce-model-allowlist"
+    description: "Only allow pre-approved models"
+    enabled: true
+    conditions:
+      - field: "request.model"
+        operator: "not_in"
+        value: "{{ variables.allowed_models }}"
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Blocked unapproved model: {{ request.model }} from user {{ request.user }}"
+      - type: "deny"
+        message: "Model '{{ request.model }}' is not in the approved list. Allowed models: {{ variables.allowed_models }}"
+        code: "model_not_allowed"
+
+  - name: "log-approved-usage"
+    description: "Log usage of approved models for analytics"
+    enabled: true
+    conditions:
+      - field: "request.model"
+        operator: "in"
+        value: "{{ variables.allowed_models }}"
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Approved model used: {{ request.model }}"
+      - type: "allow"

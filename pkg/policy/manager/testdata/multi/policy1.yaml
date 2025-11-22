@@ -1,0 +1,14 @@
+mpl_version: "1.0"
+name: "policy-1"
+version: "1.0.0"
+description: "First policy in multi-file test"
+
+rules:
+  - name: "rule-1"
+    conditions:
+      field: "request.model"
+      operator: "=="
+      value: "gpt-4"
+    actions:
+      - type: "log"
+        message: "Policy 1 rule"

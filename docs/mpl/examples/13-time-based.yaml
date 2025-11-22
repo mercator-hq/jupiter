@@ -1,0 +1,64 @@
+# Example 13: Time-Based Policies
+# Use Case: Apply different policies based on time of day or day of week
+# Expected Behavior: Premium models available during business hours only
+
+mpl_version: "1.0"
+name: "business-hours-policy"
+version: "1.0.0"
+description: "Time-based policy enforcement"
+author: "platform-team@example.com"
+tags: ["time-based", "cost-control", "business-hours"]
+
+variables:
+  premium_models: ["gpt-4", "claude-3-opus"]
+  business_hours_start: 9
+  business_hours_end: 17
+
+rules:
+  - name: "allow-premium-models-business-hours"
+    description: "Allow premium models during business hours (9am-5pm Mon-Fri)"
+    enabled: true
+    conditions:
+      - all:
+          - field: "request.model"
+            operator: "in"
+            value: "{{ variables.premium_models }}"
+          - field: "context.time.hour"
+            operator: ">="
+            value: "{{ variables.business_hours_start }}"
+          - field: "context.time.hour"
+            operator: "<"
+            value: "{{ variables.business_hours_end }}"
+          - field: "context.time.day_of_week"
+            operator: "in"
+            value: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Premium model allowed during business hours"
+      - type: "allow"
+
+  - name: "block-premium-models-off-hours"
+    description: "Block premium models outside business hours"
+    enabled: true
+    conditions:
+      - field: "request.model"
+        operator: "in"
+        value: "{{ variables.premium_models }}"
+    actions:
+      - type: "deny"
+        message: "Premium models ({{ request.model }}) are only available during business hours (9am-5pm Mon-Fri)"
+        code: "off_hours_restriction"
+
+  - name: "weekend-cost-alert"
+    description: "Alert on weekend usage for cost tracking"
+    enabled: true
+    conditions:
+      - field: "context.time.day_of_week"
+        operator: "in"
+        value: ["Saturday", "Sunday"]
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Weekend LLM usage: user={{ request.user }}, model={{ request.model }}"
+      - type: "allow"

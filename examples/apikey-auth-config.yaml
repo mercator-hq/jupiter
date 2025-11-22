@@ -1,0 +1,212 @@
+# API Key Authentication Configuration Example
+#
+# This example demonstrates how to configure API key authentication for Mercator Jupiter.
+# API keys can be extracted from headers or query parameters and validated against a
+# configured set of keys with user/team metadata.
+
+# Proxy server configuration
+proxy:
+  listen_address: "127.0.0.1:8080"
+  request_timeout: "30s"
+  max_request_size: "10MB"
+
+# Security configuration
+security:
+  # API Key Authentication
+  authentication:
+    # Enable API key authentication
+    enabled: true
+
+    # Sources define where to extract API keys from HTTP requests.
+    # Sources are tried in order; the first valid key found is used.
+    sources:
+      # Extract from Authorization header with Bearer scheme
+      # Example: Authorization: Bearer sk-test-1234567890abcdef
+      - type: "header"
+        name: "Authorization"
+        scheme: "Bearer"
+
+      # Extract from custom X-API-Key header
+      # Example: X-API-Key: sk-test-1234567890abcdef
+      - type: "header"
+        name: "X-API-Key"
+        scheme: ""  # Empty scheme means raw value
+
+      # Extract from query parameter
+      # Example: ?api_key=sk-test-1234567890abcdef
+      # WARNING: Query parameters are visible in logs. Use headers in production.
+      - type: "query"
+        name: "api_key"
+
+    # API Keys
+    # Each key has associated metadata (user, team, rate limits)
+    keys:
+      # Development key
+      - key: "sk-dev-1234567890abcdef"
+        user_id: "dev-user-1"
+        team_id: "team-engineering"
+        enabled: true
+        rate_limit: "1000/hour"  # High limit for development
+
+      # Production key for engineering team
+      - key: "sk-prod-engineering-abcdef1234567890"
+        user_id: "service-account-eng"
+        team_id: "team-engineering"
+        enabled: true
+        rate_limit: "10000/hour"
+
+      # Production key for sales team
+      - key: "sk-prod-sales-1234567890abcdef"
+        user_id: "service-account-sales"
+        team_id: "team-sales"
+        enabled: true
+        rate_limit: "1000/hour"
+
+      # Disabled key (will be rejected)
+      - key: "sk-old-deprecated-key"
+        user_id: "old-user"
+        team_id: "team-legacy"
+        enabled: false
+        rate_limit: "100/hour"
+
+      # Testing key with no rate limit
+      - key: "sk-test-unlimited"
+        user_id: "test-user"
+        team_id: "team-qa"
+        enabled: true
+        # rate_limit: ""  # Empty means unlimited
+
+# Provider configuration
+providers:
+  openai:
+    enabled: true
+    base_url: "https://api.openai.com/v1"
+    api_key: "${secret:openai-api-key}"
+    timeout: "30s"
+    max_retries: 3
+
+  anthropic:
+    enabled: true
+    base_url: "https://api.anthropic.com"
+    api_key: "${secret:anthropic-api-key}"
+    timeout: "30s"
+    max_retries: 3
+
+# Routing configuration
+routing:
+  strategy: "round-robin"
+  model_mapping:
+    gpt-4: ["openai"]
+    gpt-4-turbo: ["openai"]
+    gpt-3.5-turbo: ["openai"]
+    claude-3-opus: ["anthropic"]
+    claude-3-sonnet: ["anthropic"]
+    claude-3-haiku: ["anthropic"]
+
+# Evidence generation
+evidence:
+  enabled: true
+  backend: "sqlite"
+  sqlite:
+    path: "evidence.db"
+
+# Telemetry
+telemetry:
+  logging:
+    level: "info"
+    format: "json"
+
+# ---
+# Usage Examples
+# ---
+
+# 1. Using Bearer token in Authorization header:
+#    curl -H "Authorization: Bearer sk-dev-1234567890abcdef" \
+#         -H "Content-Type: application/json" \
+#         -d '{"model":"gpt-4","messages":[{"role":"user","content":"Hello"}]}' \
+#         http://localhost:8080/v1/chat/completions
+
+# 2. Using custom X-API-Key header:
+#    curl -H "X-API-Key: sk-dev-1234567890abcdef" \
+#         -H "Content-Type: application/json" \
+#         -d '{"model":"gpt-4","messages":[{"role":"user","content":"Hello"}]}' \
+#         http://localhost:8080/v1/chat/completions
+
+# 3. Using query parameter (not recommended for production):
+#    curl -H "Content-Type: application/json" \
+#         -d '{"model":"gpt-4","messages":[{"role":"user","content":"Hello"}]}' \
+#         "http://localhost:8080/v1/chat/completions?api_key=sk-dev-1234567890abcdef"
+
+# ---
+# Security Best Practices
+# ---
+
+# 1. Generate API Keys:
+#    - Use cryptographically random keys (min 32 bytes)
+#    - Use a prefix for easy identification (e.g., "sk-prod-", "sk-dev-")
+#    - Example generation (bash):
+#      echo "sk-$(openssl rand -hex 32)"
+
+# 2. Key Rotation:
+#    - Rotate API keys every 90 days
+#    - Keep old keys enabled for 24 hours during rotation
+#    - Monitor usage of deprecated keys
+
+# 3. Transport Security:
+#    - Always use HTTPS in production
+#    - Never send API keys over HTTP
+#    - Avoid using query parameters (visible in logs)
+
+# 4. Rate Limiting:
+#    - Set appropriate rate limits per team/user
+#    - Monitor for suspicious activity
+#    - Temporarily disable keys if abuse detected
+
+# 5. Access Control:
+#    - Use different keys for different teams/services
+#    - Associate keys with specific user/team IDs
+#    - Track usage by user_id and team_id
+
+# 6. Monitoring:
+#    - Log all authentication attempts (success/failure)
+#    - Alert on repeated authentication failures
+#    - Track API key usage patterns
+
+# ---
+# Integration with Secrets Management
+# ---
+
+# You can store API keys in secret management systems instead of the config file:
+
+# security:
+#   authentication:
+#     enabled: true
+#     sources:
+#       - type: "header"
+#         name: "Authorization"
+#         scheme: "Bearer"
+#
+#     # Load keys from environment variables
+#     keys:
+#       - key: "${secret:api-key-engineering}"
+#         user_id: "service-account-eng"
+#         team_id: "team-engineering"
+#         enabled: true
+#
+#       - key: "${secret:api-key-sales}"
+#         user_id: "service-account-sales"
+#         team_id: "team-sales"
+#         enabled: true
+
+# Set environment variables:
+# export MERCATOR_SECRET_API_KEY_ENGINEERING="sk-prod-engineering-..."
+# export MERCATOR_SECRET_API_KEY_SALES="sk-prod-sales-..."
+
+# ---
+# Response Codes
+# ---
+
+# 200 OK - Request authenticated and processed successfully
+# 401 Unauthorized - Missing API key, invalid API key, or disabled key
+# 429 Too Many Requests - Rate limit exceeded
+# 500 Internal Server Error - Server error during authentication

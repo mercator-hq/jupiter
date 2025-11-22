@@ -1,0 +1,60 @@
+# Example 18: Streaming-Specific Policies
+# Use Case: Apply specific policies for streaming vs non-streaming requests
+# Expected Behavior: Different limits for streaming to manage load
+
+mpl_version: "1.0"
+name: "streaming-policy"
+version: "1.0.0"
+description: "Policies specific to streaming LLM requests"
+author: "platform-team@example.com"
+tags: ["streaming", "performance", "resource-management"]
+
+variables:
+  max_streaming_tokens: 2000
+  max_batch_tokens: 8000
+
+rules:
+  - name: "streaming-token-limit"
+    description: "Lower token limit for streaming requests to manage server load"
+    enabled: true
+    conditions:
+      - all:
+          - field: "request.stream"
+            operator: "=="
+            value: true
+          - field: "processing.token_estimate.total_tokens"
+            operator: ">"
+            value: "{{ variables.max_streaming_tokens }}"
+    actions:
+      - type: "deny"
+        message: "Streaming requests limited to {{ variables.max_streaming_tokens }} tokens. Use non-streaming for longer requests."
+        code: "streaming_token_limit"
+
+  - name: "log-streaming-requests"
+    description: "Track streaming usage for capacity planning"
+    enabled: true
+    conditions:
+      - field: "request.stream"
+        operator: "=="
+        value: true
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Streaming request: user={{ request.user }}, model={{ request.model }}, tokens={{ processing.token_estimate.total_tokens }}"
+      - type: "allow"
+
+  - name: "free-tier-no-streaming"
+    description: "Restrict streaming to premium users only"
+    enabled: true
+    conditions:
+      - all:
+          - field: "request.stream"
+            operator: "=="
+            value: true
+          - field: "context.user_attributes.tier"
+            operator: "=="
+            value: "free"
+    actions:
+      - type: "deny"
+        message: "Streaming is available for premium users only. Upgrade your plan or use non-streaming mode."
+        code: "streaming_premium_only"

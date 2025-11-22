@@ -1,0 +1,14 @@
+mpl_version: "1.0"
+name: "policy-2"
+version: "1.0.0"
+description: "Second policy in multi-file test"
+
+rules:
+  - name: "rule-2"
+    conditions:
+      field: "request.model"
+      operator: "=="
+      value: "claude-3"
+    actions:
+      - type: "log"
+        message: "Policy 2 rule"

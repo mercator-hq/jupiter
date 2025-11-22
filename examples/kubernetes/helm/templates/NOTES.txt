@@ -1,0 +1,70 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}
+
+📊 Mercator Jupiter has been deployed!
+
+{{- if .Values.ingress.enabled }}
+
+🌐 Ingress is enabled. Access your deployment at:
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+
+{{- else if contains "NodePort" .Values.service.type }}
+
+🚀 Get the application URL by running these commands:
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "mercator-jupiter.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "http://$NODE_IP:$NODE_PORT"
+
+{{- else if contains "LoadBalancer" .Values.service.type }}
+
+🚀 Get the application URL by running these commands:
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+
+  Watch the status with:
+  kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "mercator-jupiter.fullname" . }}
+
+  Once available, get the URL:
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "mercator-jupiter.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo "http://$SERVICE_IP:{{ .Values.service.port }}"
+
+{{- else if contains "ClusterIP" .Values.service.type }}
+
+🚀 Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "mercator-jupiter.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+
+{{- end }}
+
+📈 Metrics are available at:
+  http://{{ include "mercator-jupiter.fullname" . }}:{{ .Values.service.metricsPort }}/metrics
+
+📚 Documentation: https://github.com/mercator-hq/jupiter/tree/main/docs
+
+⚙️  Configuration:
+  - Providers: {{ if .Values.config.providers.openai }}OpenAI{{ end }}{{ if .Values.config.providers.anthropic }}, Anthropic{{ end }}
+  - Policy Mode: {{ .Values.config.policy.mode }}
+  - Evidence Storage: {{ .Values.config.evidence.backend }}
+  {{- if .Values.persistence.enabled }}
+  - Persistence: Enabled ({{ .Values.persistence.size }})
+  {{- end }}
+  {{- if .Values.autoscaling.enabled }}
+  - Autoscaling: Enabled ({{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas)
+  {{- end }}
+
+⚠️  Important: Make sure to set API keys via secrets or values file:
+  --set secrets.openaiApiKey="sk-..."
+  --set secrets.anthropicApiKey="sk-..."
+
+Happy governance! 🚀

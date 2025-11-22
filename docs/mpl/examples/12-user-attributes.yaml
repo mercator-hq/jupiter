@@ -1,0 +1,56 @@
+# Example 12: User-Based Policies
+# Use Case: Apply different policies based on user tier and attributes
+# Expected Behavior: Premium users have fewer restrictions than free users
+
+mpl_version: "1.0"
+name: "user-tier-policy"
+version: "1.0.0"
+description: "Differentiate policies based on user tiers"
+author: "product-team@example.com"
+tags: ["user-management", "tiers", "access-control"]
+
+rules:
+  - name: "premium-users-unlimited"
+    description: "Allow premium users unlimited access to all models"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.tier"
+        operator: "=="
+        value: "premium"
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Premium user access: {{ context.user_attributes.user_id }}"
+      - type: "allow"
+
+  - name: "free-users-model-restriction"
+    description: "Restrict free users to specific models"
+    enabled: true
+    conditions:
+      - all:
+          - field: "context.user_attributes.tier"
+            operator: "=="
+            value: "free"
+          - field: "request.model"
+            operator: "not_in"
+            value: ["gpt-3.5-turbo", "claude-3-haiku"]
+    actions:
+      - type: "deny"
+        message: "Model {{ request.model }} is not available for free tier. Upgrade to premium for access."
+        code: "model_tier_restriction"
+
+  - name: "free-users-hourly-limit"
+    description: "Enforce hourly request limit for free users"
+    enabled: true
+    conditions:
+      - all:
+          - field: "context.user_attributes.tier"
+            operator: "=="
+            value: "free"
+          - field: "context.user_attributes.requests_this_hour"
+            operator: ">"
+            value: 10
+    actions:
+      - type: "deny"
+        message: "Hourly request limit (10 requests) exceeded for free tier. Upgrade to premium for higher limits."
+        code: "hourly_limit_exceeded"

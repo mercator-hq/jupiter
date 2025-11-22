@@ -1,0 +1,11 @@
+{{- if not .Values.policies.existingConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mercator-jupiter.policiesConfigMapName" . }}
+  labels:
+    {{- include "mercator-jupiter.labels" . | nindent 4 }}
+data:
+  policy.yaml: |
+    {{- .Values.policies.inline | nindent 4 }}
+{{- end }}

@@ -1,0 +1,91 @@
+# Example 20: Comprehensive Audit Trail
+# Use Case: Complete audit logging with alerts for compliance and security
+# Expected Behavior: Every request logged, alerts for anomalies
+
+mpl_version: "1.0"
+name: "comprehensive-audit"
+version: "1.0.0"
+description: "Comprehensive audit trail for compliance and security monitoring"
+author: "compliance-team@example.com"
+tags: ["audit", "compliance", "security", "logging"]
+
+rules:
+  - name: "log-all-requests-detailed"
+    description: "Log comprehensive metadata for every request"
+    enabled: true
+    conditions:
+      - field: "processing.complexity_score"
+        operator: ">="
+        value: 0  # Match all
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Audit: user={{ request.user }}, model={{ request.model }}, tokens={{ processing.token_estimate.total_tokens }}, cost={{ processing.cost_estimate.total_cost }}, risk={{ processing.risk_score }}, timestamp={{ context.time.timestamp }}"
+
+  - name: "alert-anonymous-requests"
+    description: "Alert on requests without user identification"
+    enabled: true
+    conditions:
+      - field: "request.user"
+        operator: "=="
+        value: ""
+    actions:
+      - type: "alert"
+        webhook: "https://security.example.com/anonymous-request"
+        message: "Anonymous request detected"
+        severity: "medium"
+      - type: "log"
+        level: "warn"
+        message: "Anonymous request from IP {{ context.client_ip }}"
+
+  - name: "alert-unusual-token-usage"
+    description: "Alert on unusually large token requests"
+    enabled: true
+    conditions:
+      - field: "processing.token_estimate.total_tokens"
+        operator: ">"
+        value: 10000
+    actions:
+      - type: "alert"
+        webhook: "https://alerts.example.com/unusual-usage"
+        message: "Unusual token usage: {{ processing.token_estimate.total_tokens }} tokens from user {{ request.user }}"
+        severity: "low"
+      - type: "log"
+        level: "info"
+        message: "Large token request: {{ processing.token_estimate.total_tokens }} tokens"
+
+  - name: "log-policy-violations"
+    description: "Log all security and compliance violations"
+    enabled: true
+    conditions:
+      - any:
+          - field: "processing.content_analysis.pii_detection.detected"
+            operator: "=="
+            value: true
+          - field: "processing.content_analysis.prompt_injection.detected"
+            operator: "=="
+            value: true
+          - field: "processing.content_analysis.sensitive_content.detected"
+            operator: "=="
+            value: true
+    actions:
+      - type: "log"
+        level: "warn"
+        message: "Policy violation detected: pii={{ processing.content_analysis.pii_detection.detected }}, injection={{ processing.content_analysis.prompt_injection.detected }}, sensitive={{ processing.content_analysis.sensitive_content.detected }}"
+      - type: "alert"
+        webhook: "https://compliance.example.com/violations"
+        message: "Compliance violation from user {{ request.user }}"
+        severity: "medium"
+
+  - name: "daily-usage-summary"
+    description: "Log daily usage summary for billing"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.requests_this_hour"
+        operator: ">"
+        value: 0
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Daily usage: user={{ request.user }}, requests_this_hour={{ context.user_attributes.requests_this_hour }}, tokens_today={{ context.user_attributes.daily_token_usage }}, cost_today=${{ context.user_attributes.daily_cost }}"
+      - type: "allow"

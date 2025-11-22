@@ -1,0 +1,42 @@
+[Unit]
+Description=Mercator Jupiter - LLM Governance Proxy
+Documentation=https://github.com/mercator-hq/jupiter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mercator
+Group=mercator
+
+# Working directory
+WorkingDirectory=/opt/mercator
+
+# Binary location
+ExecStart=/usr/local/bin/mercator run --config /etc/mercator/config.yaml
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/mercator /var/log/mercator
+
+# Environment file
+EnvironmentFile=/etc/mercator/mercator.env
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mercator
+
+[Install]
+WantedBy=multi-user.target

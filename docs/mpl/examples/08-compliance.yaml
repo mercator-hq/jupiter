@@ -1,0 +1,40 @@
+# Example 8: Compliance Audit Logging
+# Use Case: Log all requests for compliance and audit purposes
+# Expected Behavior: All requests are logged with relevant metadata
+
+mpl_version: "1.0"
+name: "compliance-audit"
+version: "1.0.0"
+description: "Comprehensive audit logging for compliance"
+author: "compliance-team@example.com"
+tags: ["compliance", "audit", "logging"]
+
+rules:
+  - name: "log-all-requests"
+    description: "Log every request with user, model, and token information"
+    enabled: true
+    conditions:
+      - field: "processing.complexity_score"
+        operator: ">="
+        value: 0  # Match all requests
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Request: user={{ request.user }}, model={{ request.model }}, tokens={{ processing.token_estimate.total_tokens }}, cost={{ processing.cost_estimate.total_cost }}"
+      - type: "allow"
+
+  - name: "alert-sensitive-content"
+    description: "Alert compliance team when sensitive content is detected"
+    enabled: true
+    conditions:
+      - field: "processing.content_analysis.sensitive_content.severity"
+        operator: "in"
+        value: ["high", "critical"]
+    actions:
+      - type: "alert"
+        webhook: "https://compliance.example.com/alerts"
+        message: "Sensitive content detected: severity={{ processing.content_analysis.sensitive_content.severity }}, categories={{ processing.content_analysis.sensitive_content.categories }}"
+        severity: "high"
+      - type: "log"
+        level: "error"
+        message: "Sensitive content detected from user {{ request.user }}"

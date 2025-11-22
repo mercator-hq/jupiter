@@ -1,0 +1,88 @@
+# Model Restrictions Policy
+#
+# Control which LLM models can be used by enforcing an allowlist.
+# This helps manage costs and ensure consistency.
+#
+# Use case: Cost control, compliance, standardization
+
+mpl_version: "1.0"
+name: "model-restrictions"
+version: "1.0.0"
+description: "Restrict access to approved LLM models only"
+
+metadata:
+  author: "Mercator Team"
+  category: "access-control"
+  tags: ["models", "allowlist", "cost-control"]
+
+rules:
+  # Rule 1: Allow approved models
+  - name: "allow-approved-models"
+    description: "Permit requests using approved models"
+    priority: 100
+
+    conditions:
+      field: "request.model"
+      operator: "in"
+      value:
+        - "gpt-4"
+        - "gpt-4-turbo"
+        - "gpt-3.5-turbo"
+        - "claude-3-opus"
+        - "claude-3-sonnet"
+
+    actions:
+      - type: "allow"
+        message: "Approved model usage"
+
+      - type: "log"
+        level: "info"
+        message: "Request using approved model"
+
+  # Rule 2: Block unapproved models
+  - name: "block-unapproved-models"
+    description: "Deny requests using models not on allowlist"
+    priority: 50
+
+    conditions:
+      field: "request.model"
+      operator: "not_in"
+      value:
+        - "gpt-4"
+        - "gpt-4-turbo"
+        - "gpt-3.5-turbo"
+        - "claude-3-opus"
+        - "claude-3-sonnet"
+
+    actions:
+      - type: "deny"
+        message: "Model not approved. Use one of: gpt-4, gpt-4-turbo, gpt-3.5-turbo, claude-3-opus, claude-3-sonnet"
+
+      - type: "log"
+        level: "warning"
+        message: "Attempted use of unapproved model"
+        include_fields:
+          - "request.model"
+          - "request.user.id"
+
+  # Rule 3: Block deprecated models
+  - name: "block-deprecated-models"
+    description: "Prevent usage of deprecated/discontinued models"
+    priority: 200
+
+    conditions:
+      field: "request.model"
+      operator: "in"
+      value:
+        - "gpt-3"
+        - "davinci"
+        - "curie"
+        - "babbage"
+
+    actions:
+      - type: "deny"
+        message: "This model has been deprecated. Please migrate to gpt-3.5-turbo or gpt-4"
+
+      - type: "log"
+        level: "error"
+        message: "Attempted use of deprecated model"

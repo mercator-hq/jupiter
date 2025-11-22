@@ -1,0 +1,130 @@
+# Development Configuration for Mercator Jupiter
+#
+# This configuration is optimized for local development and testing.
+# Features: Debug logging, file watching, fast timeouts, local storage
+#
+# To use:
+#   1. Set environment variables for provider API keys
+#   2. Run: mercator run --config examples/configs/development.yaml
+
+# Proxy server configuration
+proxy:
+  # Listen on localhost only
+  listen_address: "127.0.0.1:8080"
+
+  # Shorter timeouts for faster feedback
+  read_timeout: "15s"
+  write_timeout: "15s"
+  idle_timeout: "60s"
+  shutdown_timeout: "10s"
+
+  # Smaller header limit for development
+  max_header_bytes: 524288  # 512KB
+
+  # CORS enabled for browser testing
+  cors:
+    enabled: true
+    allowed_origins: ["*"]
+    allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed_headers: ["Authorization", "Content-Type", "X-Request-ID", "X-User-ID"]
+    allow_credentials: false
+
+# Provider configurations for development
+providers:
+  # OpenAI for testing
+  openai:
+    base_url: "https://api.openai.com/v1"
+    api_key: "${OPENAI_API_KEY}"
+    timeout: "30s"
+    max_retries: 1  # Fail fast in development
+
+  # Local Ollama for offline development
+  ollama:
+    base_url: "http://localhost:11434"
+    timeout: "60s"
+    max_retries: 1
+
+# Policy configuration with file watching
+policy:
+  # File mode with hot-reload
+  mode: "file"
+  file_path: "policies.yaml"
+
+  # Watch for changes and auto-reload
+  watch: true
+
+  # Validation settings
+  validation:
+    enabled: true
+    strict: false  # Allow warnings in development
+
+# Evidence storage - SQLite for simplicity
+evidence:
+  enabled: true
+  backend: "sqlite"
+
+  sqlite:
+    path: "dev-evidence.db"
+
+  # Short retention for development
+  retention_days: 7
+
+  # No signing in development
+  # signing_key_path: ""
+
+# Request/response processing
+processing:
+  # Enable for debugging
+  enrich_requests: true
+  estimate_costs: true
+
+# Routing - simple round-robin
+routing:
+  strategy: "round-robin"
+  sticky_routing: false
+  health_check_interval: "30s"
+
+# Budget tracking (lenient for development)
+limits:
+  budgets:
+    enabled: false  # Disabled for easy testing
+
+  rate_limiting:
+    enabled: false  # Disabled for easy testing
+
+# Telemetry - verbose for development
+telemetry:
+  # Logging configuration
+  logging:
+    # Debug level for detailed logs
+    level: "debug"
+
+    # Text format for human readability
+    format: "text"
+
+  # Metrics enabled
+  metrics:
+    enabled: true
+    prometheus_path: "/metrics"
+
+  # Tracing disabled (optional for development)
+  tracing:
+    enabled: false
+
+# Security - no TLS for local development
+security:
+  # TLS disabled
+  tls:
+    enabled: false
+
+  # mTLS disabled
+  mtls:
+    enabled: false
+
+  # Optional: API keys for testing multi-tenancy
+  api_keys: []
+    # - key: "dev-key-1"
+    #   name: "development-1"
+    #   metadata:
+    #     env: "development"
+    #     team: "platform"

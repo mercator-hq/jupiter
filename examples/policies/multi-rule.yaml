@@ -1,0 +1,214 @@
+# Multi-Rule Policy
+#
+# Demonstrates a policy with multiple rules of varying priorities.
+# Shows how rules can interact and how priority ordering affects evaluation.
+#
+# Use case: Complex governance requirements, multi-layered controls
+
+mpl_version: "1.0"
+name: "multi-rule-policy"
+version: "2.0.0"
+description: "Comprehensive policy with multiple rules and priorities"
+
+metadata:
+  author: "Mercator Team"
+  category: "comprehensive"
+  tags: ["multi-rule", "complex", "production"]
+  last_updated: "2024-11-19"
+
+rules:
+  # Highest priority: Security checks (200-300)
+  - name: "emergency-shutdown"
+    description: "Global circuit breaker - evaluated first"
+    priority: 300
+
+    conditions:
+      field: "system.emergency_mode"
+      operator: "=="
+      value: true
+
+    actions:
+      - type: "deny"
+        message: "System in emergency mode. All requests suspended."
+
+      - type: "log"
+        level: "critical"
+        message: "Request blocked - emergency mode active"
+
+  - name: "block-malicious-patterns"
+    description: "Block known attack patterns"
+    priority: 250
+
+    conditions:
+      any:
+        - field: "request.prompt"
+          operator: "contains"
+          value: "ignore previous instructions"
+        - field: "request.prompt"
+          operator: "contains"
+          value: "jailbreak"
+        - field: "request.headers.user_agent"
+          operator: "contains"
+          value: "bot"
+
+    actions:
+      - type: "deny"
+        message: "Suspicious request pattern detected"
+
+      - type: "log"
+        level: "error"
+        message: "Potential attack blocked"
+        include_fields:
+          - "request.ip_address"
+          - "request.user.id"
+
+  # High priority: Access control (100-199)
+  - name: "require-authentication"
+    description: "All requests must be authenticated"
+    priority: 150
+
+    conditions:
+      field: "request.user.authenticated"
+      operator: "=="
+      value: false
+
+    actions:
+      - type: "deny"
+        message: "Authentication required"
+
+      - type: "log"
+        level: "warning"
+        message: "Unauthenticated request blocked"
+
+  - name: "enforce-model-access"
+    description: "Control model access by user tier"
+    priority: 120
+
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "=="
+          value: "free"
+        - field: "request.model"
+          operator: "in"
+          value: ["gpt-4", "claude-3-opus"]
+
+    actions:
+      - type: "deny"
+        message: "Premium models require paid subscription"
+
+      - type: "log"
+        level: "info"
+        message: "Premium model access denied for free tier"
+
+  # Medium priority: Rate limiting and quotas (50-99)
+  - name: "hourly-rate-limit"
+    description: "Enforce hourly request limits"
+    priority: 75
+
+    conditions:
+      field: "rate_limit.hourly"
+      operator: ">"
+      value: 100
+
+    actions:
+      - type: "deny"
+        message: "Hourly rate limit exceeded. Try again in {reset_time} minutes."
+
+      - type: "log"
+        level: "info"
+        message: "Rate limit enforced"
+
+  - name: "token-quota"
+    description: "Enforce daily token quota"
+    priority: 70
+
+    conditions:
+      all:
+        - field: "request.estimated_tokens"
+          operator: ">"
+          value: 4000
+        - field: "quota.daily_tokens_remaining"
+          operator: "<"
+          value: 4000
+
+    actions:
+      - type: "deny"
+        message: "Insufficient token quota for this request"
+
+      - type: "log"
+        level: "info"
+        message: "Request denied due to quota"
+
+  # Low priority: Transformations and logging (0-49)
+  - name: "add-system-context"
+    description: "Add system instructions to all requests"
+    priority: 40
+
+    conditions:
+      field: "request.type"
+      operator: "=="
+      value: "completion"
+
+    actions:
+      - type: "transform"
+        prepend_to_prompt: "You are a helpful AI assistant. Always be respectful and accurate.\n\n"
+
+      - type: "log"
+        level: "debug"
+        message: "System context added to prompt"
+
+  - name: "enforce-output-format"
+    description: "Require JSON output for API requests"
+    priority: 35
+
+    conditions:
+      all:
+        - field: "request.source"
+          operator: "=="
+          value: "api"
+        - field: "request.output_format"
+          operator: "!="
+          value: "json"
+
+    actions:
+      - type: "transform"
+        set_parameter:
+          name: "output_format"
+          value: "json"
+
+      - type: "log"
+        level: "debug"
+        message: "Output format set to JSON"
+
+  - name: "log-all-production"
+    description: "Log all requests in production environment"
+    priority: 10
+
+    conditions:
+      field: "environment"
+      operator: "=="
+      value: "production"
+
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Production request logged"
+        include_fields:
+          - "request.user.id"
+          - "request.model"
+          - "request.timestamp"
+          - "request.estimated_tokens"
+
+  - name: "default-allow"
+    description: "Allow requests that pass all checks"
+    priority: 1
+
+    conditions:
+      field: "request.type"
+      operator: "=="
+      value: "completion"
+
+    actions:
+      - type: "allow"
+        message: "Request approved"

@@ -1,0 +1,57 @@
+# Example 9: Data Residency Enforcement
+# Use Case: Enforce data residency requirements based on user location
+# Expected Behavior: Route requests to region-specific providers based on user location
+
+mpl_version: "1.0"
+name: "data-residency"
+version: "1.0.0"
+description: "Enforce data residency and sovereignty requirements"
+author: "compliance-team@example.com"
+tags: ["compliance", "data-residency", "gdpr"]
+
+variables:
+  eu_providers: ["openai-eu", "anthropic-eu"]
+  us_providers: ["openai-us", "anthropic-us"]
+
+rules:
+  - name: "route-eu-users-to-eu-providers"
+    description: "Ensure EU users' data stays in EU region"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.region"
+        operator: "=="
+        value: "eu"
+    actions:
+      - type: "route"
+        provider: "openai-eu"
+        reason: "GDPR compliance: EU data residency required"
+      - type: "log"
+        level: "info"
+        message: "Routing EU user to EU provider for data residency compliance"
+
+  - name: "route-us-users-to-us-providers"
+    description: "Route US users to US providers"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.region"
+        operator: "=="
+        value: "us"
+    actions:
+      - type: "route"
+        provider: "openai-us"
+        reason: "US data residency"
+      - type: "log"
+        level: "info"
+        message: "Routing US user to US provider"
+
+  - name: "block-unsupported-regions"
+    description: "Block requests from unsupported regions"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.region"
+        operator: "not_in"
+        value: ["eu", "us"]
+    actions:
+      - type: "deny"
+        message: "Service not available in your region"
+        code: "region_not_supported"

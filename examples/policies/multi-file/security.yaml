@@ -1,0 +1,64 @@
+# Security Policy
+# Priority range: 200-299 (highest priority)
+# Owner: Security Team
+
+mpl_version: "1.0"
+name: "security-controls"
+version: "1.0.0"
+description: "Security-focused policy rules"
+
+metadata:
+  owner: "security-team@example.com"
+  category: "security"
+  priority_range: "200-299"
+
+rules:
+  - name: "block-prompt-injection"
+    description: "Detect and block prompt injection attempts"
+    priority: 250
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "ignore previous instructions"
+        - "forget everything"
+        - "jailbreak"
+        - "system: you are now"
+    actions:
+      - type: "deny"
+        message: "Security violation: Prompt injection detected"
+      - type: "log"
+        level: "error"
+        message: "Prompt injection attempt blocked"
+
+  - name: "prevent-pii-leakage"
+    description: "Block requests with PII"
+    priority: 240
+    conditions:
+      any:
+        - field: "request.prompt"
+          operator: "matches_regex"
+          value: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        - field: "request.prompt"
+          operator: "contains"
+          value: "credit card"
+    actions:
+      - type: "deny"
+        message: "PII detected - please remove sensitive data"
+      - type: "log"
+        level: "warning"
+        message: "PII detected in request"
+
+  - name: "require-authentication"
+    description: "All requests must be authenticated"
+    priority: 230
+    conditions:
+      field: "request.user.authenticated"
+      operator: "=="
+      value: false
+    actions:
+      - type: "deny"
+        message: "Authentication required"
+      - type: "log"
+        level: "warning"
+        message: "Unauthenticated request blocked"

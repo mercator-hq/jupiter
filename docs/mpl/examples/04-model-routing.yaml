@@ -1,0 +1,60 @@
+# Example 4: Intelligent Model Routing
+# Use Case: Route requests to appropriate models based on complexity and cost
+# Expected Behavior: Simple queries use cheaper models, complex queries use premium models
+
+mpl_version: "1.0"
+name: "cost-based-routing"
+version: "1.0.0"
+description: "Route requests to optimal models based on complexity"
+author: "platform-team@example.com"
+tags: ["cost-optimization", "routing", "performance"]
+
+rules:
+  - name: "route-simple-queries-to-cheaper-model"
+    description: "Use cost-effective model for simple, low-token queries"
+    enabled: true
+    conditions:
+      - all:
+          - field: "processing.complexity_score"
+            operator: "<"
+            value: 5
+          - field: "processing.token_estimate.total_tokens"
+            operator: "<"
+            value: 1000
+    actions:
+      - type: "route"
+        provider: "openai"
+        model: "gpt-3.5-turbo"
+        reason: "Low complexity, using cost-effective model"
+      - type: "log"
+        level: "info"
+        message: "Routed to gpt-3.5-turbo: complexity={{ processing.complexity_score }}"
+
+  - name: "route-complex-queries-to-premium-model"
+    description: "Use premium model for complex queries requiring advanced reasoning"
+    enabled: true
+    conditions:
+      - field: "processing.complexity_score"
+        operator: ">="
+        value: 7
+    actions:
+      - type: "route"
+        provider: "anthropic"
+        model: "claude-3-opus"
+        reason: "High complexity, using premium model"
+      - type: "log"
+        level: "info"
+        message: "Routed to claude-3-opus: complexity={{ processing.complexity_score }}"
+
+  - name: "default-to-standard-model"
+    description: "Use standard model for medium complexity queries"
+    enabled: true
+    conditions:
+      - field: "processing.complexity_score"
+        operator: ">="
+        value: 0  # Match all remaining requests
+    actions:
+      - type: "route"
+        provider: "openai"
+        model: "gpt-4"
+        reason: "Medium complexity, using standard model"

@@ -1,0 +1,23 @@
+mpl_version: "1.0"
+name: "simple-policy"
+version: "1.0.0"
+description: "A simple test policy"
+author: "Test Author"
+created: "2025-01-19T00:00:00Z"
+updated: "2025-01-19T00:00:00Z"
+tags:
+  - test
+  - simple
+
+rules:
+  - name: "test-rule-1"
+    description: "A simple test rule"
+    enabled: true
+    priority: 100
+    conditions:
+      field: "request.model"
+      operator: "=="
+      value: "gpt-4"
+    actions:
+      - type: "log"
+        message: "GPT-4 request detected"

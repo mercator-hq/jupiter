@@ -1,0 +1,21 @@
+tests:
+  - name: "Allow GPT-4 request"
+    request:
+      model: "gpt-4"
+      messages:
+        - role: "user"
+          content: "Hello, world!"
+    metadata:
+      user_id: "test-user"
+      estimated_cost: 0.05
+    expect:
+      action: "allow"
+
+  - name: "Allow GPT-3.5 request"
+    request:
+      model: "gpt-3.5-turbo"
+      messages:
+        - role: "user"
+          content: "Test message"
+    expect:
+      action: "allow"

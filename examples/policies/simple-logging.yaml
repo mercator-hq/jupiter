@@ -1,0 +1,35 @@
+# Simple Logging Policy
+#
+# This is the most basic policy example. It logs all requests without
+# restricting or modifying them.
+#
+# Use case: Audit trail, request monitoring, debugging
+
+mpl_version: "1.0"
+name: "simple-logging"
+version: "1.0.0"
+description: "Log all LLM requests for audit trail"
+
+metadata:
+  author: "Mercator Team"
+  category: "observability"
+  tags: ["logging", "audit", "basic"]
+
+rules:
+  - name: "log-all-requests"
+    description: "Log every request with basic information"
+    enabled: true
+    priority: 100
+
+    conditions:
+      # Match all requests (always true)
+      - field: "processing.complexity_score"
+        operator: ">="
+        value: 0
+
+    actions:
+      - type: "log"
+        level: "info"
+        message: "LLM request: user={{ request.user }}, model={{ request.model }}, timestamp={{ context.time.timestamp }}"
+
+      - type: "allow"

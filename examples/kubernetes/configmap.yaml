@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mercator-config
+  labels:
+    app: mercator-jupiter
+data:
+  config.yaml: |
+    proxy:
+      listen_address: "0.0.0.0:8080"
+      read_timeout: "30s"
+      write_timeout: "30s"
+      idle_timeout: "120s"
+
+    providers:
+      openai:
+        base_url: "https://api.openai.com/v1"
+        api_key: "${OPENAI_API_KEY}"
+        timeout: "60s"
+        max_retries: 3
+
+      anthropic:
+        base_url: "https://api.anthropic.com"
+        api_key: "${ANTHROPIC_API_KEY}"
+        timeout: "60s"
+        max_retries: 3
+
+    policy:
+      mode: "file"
+      file_path: "/app/policies/policies.yaml"
+      watch: false
+
+    evidence:
+      enabled: true
+      backend: "sqlite"
+      sqlite:
+        path: "/app/data/evidence.db"
+      retention_days: 90
+
+    telemetry:
+      logging:
+        level: "info"
+        format: "json"
+      metrics:
+        enabled: true
+        prometheus_path: "/metrics"
+
+    security:
+      tls:
+        enabled: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mercator-policies
+  labels:
+    app: mercator-jupiter
+data:
+  policies.yaml: |
+    version: "1.0"
+
+    policies:
+      - name: "basic-logging"
+        description: "Log all requests"
+        priority: 100
+        rules:
+          - condition: "true"
+            action: "log"
+            log_level: "info"
+            message: "Request from {{request.metadata.user_id}}"
+
+      - name: "model-routing"
+        description: "Route to appropriate providers"
+        priority: 150
+        rules:
+          - condition: 'request.model matches "^gpt-"'
+            action: "route"
+            provider: "openai"
+
+          - condition: 'request.model matches "^claude-"'
+            action: "route"
+            provider: "anthropic"

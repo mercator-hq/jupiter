@@ -1,0 +1,16 @@
+mpl_version: "1.0"
+name: "simple-policy"
+version: "1.0.0"
+description: "A simple test policy"
+
+rules:
+  - name: "deny-high-risk"
+    description: "Block high-risk requests"
+    conditions:
+      - field: "processing.risk_score"
+        operator: ">"
+        value: 7
+    actions:
+      - type: "deny"
+        message: "Risk score too high"
+        code: "risk_too_high"

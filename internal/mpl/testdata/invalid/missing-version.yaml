@@ -1,0 +1,11 @@
+name: "missing-version"
+version: "1.0.0"
+
+rules:
+  - name: "test-rule"
+    conditions:
+      - field: "request.model"
+        operator: "=="
+        value: "gpt-4"
+    actions:
+      - type: "allow"

@@ -1,0 +1,132 @@
+# Rate Limiting Policy
+#
+# Enforce rate limits to prevent abuse and manage costs.
+# Different limits can be applied based on user tier, model, or other attributes.
+#
+# Use case: Cost control, abuse prevention, fair usage
+
+mpl_version: "1.0"
+name: "rate-limiting"
+version: "1.0.0"
+description: "Apply rate limits based on user tier and model"
+
+metadata:
+  author: "Mercator Team"
+  category: "quota-management"
+  tags: ["rate-limiting", "quota", "cost-control"]
+
+rules:
+  # Rule 1: Rate limit free tier users
+  - name: "free-tier-rate-limit"
+    description: "Limit free tier users to 100 requests per hour"
+    priority: 100
+
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "=="
+          value: "free"
+        - field: "rate_limit.hourly"
+          operator: ">"
+          value: 100
+
+    actions:
+      - type: "deny"
+        message: "Free tier rate limit exceeded (100 requests/hour). Upgrade to increase limits."
+
+      - type: "log"
+        level: "warning"
+        message: "Free tier rate limit exceeded"
+        include_fields:
+          - "request.user.id"
+          - "rate_limit.current"
+
+  # Rule 2: Rate limit basic tier users
+  - name: "basic-tier-rate-limit"
+    description: "Limit basic tier users to 1000 requests per hour"
+    priority: 100
+
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "=="
+          value: "basic"
+        - field: "rate_limit.hourly"
+          operator: ">"
+          value: 1000
+
+    actions:
+      - type: "deny"
+        message: "Basic tier rate limit exceeded (1000 requests/hour). Upgrade to Pro for higher limits."
+
+      - type: "log"
+        level: "info"
+        message: "Basic tier rate limit exceeded"
+
+  # Rule 3: Stricter limits for expensive models
+  - name: "expensive-model-rate-limit"
+    description: "Lower rate limit for GPT-4 and Claude-3-Opus"
+    priority: 150
+
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "in"
+          value: ["free", "basic"]
+        - field: "request.model"
+          operator: "in"
+          value: ["gpt-4", "claude-3-opus"]
+        - field: "rate_limit.model_hourly"
+          operator: ">"
+          value: 20
+
+    actions:
+      - type: "deny"
+        message: "Premium model rate limit exceeded (20 requests/hour). Use gpt-3.5-turbo for higher limits or upgrade tier."
+
+      - type: "log"
+        level: "warning"
+        message: "Premium model rate limit exceeded"
+
+  # Rule 4: Per-second burst protection
+  - name: "burst-protection"
+    description: "Prevent rapid-fire requests (max 10 per second)"
+    priority: 200
+
+    conditions:
+      field: "rate_limit.per_second"
+      operator: ">"
+      value: 10
+
+    actions:
+      - type: "deny"
+        message: "Request rate too high. Maximum 10 requests per second. Please add delays between requests."
+
+      - type: "log"
+        level: "error"
+        message: "Burst rate limit exceeded - potential abuse"
+        include_fields:
+          - "request.user.id"
+          - "request.ip_address"
+
+  # Rule 5: Token-based rate limiting
+  - name: "token-limit"
+    description: "Limit total tokens per day (prevents abuse via long prompts)"
+    priority: 100
+
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "=="
+          value: "free"
+        - field: "rate_limit.daily_tokens"
+          operator: ">"
+          value: 100000
+
+    actions:
+      - type: "deny"
+        message: "Daily token limit exceeded (100,000 tokens). Resets at midnight UTC."
+
+      - type: "log"
+        level: "info"
+        message: "Daily token limit exceeded"

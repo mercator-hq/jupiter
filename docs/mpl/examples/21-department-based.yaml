@@ -1,0 +1,80 @@
+# Example 21: Department-Based Access Control
+# Use Case: Apply different policies based on user department
+# Expected Behavior: Different departments have different access levels and restrictions
+
+mpl_version: "1.0"
+name: "department-policy"
+version: "1.0.0"
+description: "Department-based access control and resource allocation"
+author: "platform-team@example.com"
+tags: ["access-control", "departments", "resource-management"]
+
+variables:
+  engineering_budget: 500.00
+  marketing_budget: 200.00
+  sales_budget: 300.00
+
+rules:
+  - name: "engineering-full-access"
+    description: "Engineering department has full model access"
+    enabled: true
+    conditions:
+      - field: "context.user_attributes.department"
+        operator: "=="
+        value: "engineering"
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Engineering access: user={{ context.user_attributes.user_id }}"
+      - type: "allow"
+
+  - name: "marketing-restricted-models"
+    description: "Marketing limited to cost-effective models"
+    enabled: true
+    conditions:
+      - all:
+          - field: "context.user_attributes.department"
+            operator: "=="
+            value: "marketing"
+          - field: "request.model"
+            operator: "not_in"
+            value: ["gpt-3.5-turbo", "claude-3-haiku"]
+    actions:
+      - type: "deny"
+        message: "Marketing department limited to gpt-3.5-turbo and claude-3-haiku for cost management"
+        code: "department_model_restriction"
+
+  - name: "department-budget-enforcement"
+    description: "Enforce monthly budget per department"
+    enabled: true
+    conditions:
+      - any:
+          - all:
+              - field: "context.user_attributes.department"
+                operator: "=="
+                value: "engineering"
+              - field: "context.user_attributes.monthly_cost"
+                operator: ">"
+                value: "{{ variables.engineering_budget }}"
+          - all:
+              - field: "context.user_attributes.department"
+                operator: "=="
+                value: "marketing"
+              - field: "context.user_attributes.monthly_cost"
+                operator: ">"
+                value: "{{ variables.marketing_budget }}"
+          - all:
+              - field: "context.user_attributes.department"
+                operator: "=="
+                value: "sales"
+              - field: "context.user_attributes.monthly_cost"
+                operator: ">"
+                value: "{{ variables.sales_budget }}"
+    actions:
+      - type: "alert"
+        webhook: "https://finance.example.com/budget-alert"
+        message: "Department {{ context.user_attributes.department }} exceeded monthly budget"
+        severity: "high"
+      - type: "deny"
+        message: "Your department has exceeded its monthly LLM budget. Contact your manager."
+        code: "department_budget_exceeded"

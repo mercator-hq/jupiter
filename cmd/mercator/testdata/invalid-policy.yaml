@@ -1,0 +1,3 @@
+# Missing required mpl_version and name fields
+version: "1.0.0"
+description: "Invalid policy"

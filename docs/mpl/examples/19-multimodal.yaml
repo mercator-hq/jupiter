@@ -1,0 +1,81 @@
+# Example 19: Multimodal Content Policies
+# Use Case: Govern requests that include images, audio, or other non-text content
+# Expected Behavior: Apply specific policies for multimodal requests
+
+mpl_version: "1.0"
+name: "multimodal-policy"
+version: "1.0.0"
+description: "Policies for multimodal LLM requests (images, audio, etc.)"
+author: "platform-team@example.com"
+tags: ["multimodal", "images", "content-types"]
+
+variables:
+  max_images_per_request: 5
+  allowed_content_types: ["text", "image/png", "image/jpeg"]
+
+rules:
+  - name: "limit-images-per-request"
+    description: "Limit number of images per request for cost control"
+    enabled: true
+    conditions:
+      - function: "len"
+        args: ["request.messages[*].content[type=image]"]
+        operator: ">"
+        value: "{{ variables.max_images_per_request }}"
+    actions:
+      - type: "deny"
+        message: "Maximum {{ variables.max_images_per_request }} images per request. Please reduce image count."
+        code: "too_many_images"
+
+  - name: "log-multimodal-requests"
+    description: "Track multimodal usage for billing and analytics"
+    enabled: true
+    conditions:
+      - function: "len"
+        args: ["request.messages[*].content[type!=text]"]
+        operator: ">"
+        value: 0
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Multimodal request: user={{ request.user }}, content_types={{ request.messages[*].content[*].type }}"
+      - type: "allow"
+
+  - name: "premium-only-multimodal"
+    description: "Restrict multimodal features to premium tier"
+    enabled: true
+    conditions:
+      - all:
+          - function: "len"
+            args: ["request.messages[*].content[type!=text]"]
+            operator: ">"
+            value: 0
+          - field: "context.user_attributes.tier"
+            operator: "=="
+            value: "free"
+    actions:
+      - type: "deny"
+        message: "Multimodal features (images, audio) are available for premium users only"
+        code: "multimodal_premium_only"
+
+  - name: "alert-high-cost-multimodal"
+    description: "Alert on expensive multimodal requests"
+    enabled: true
+    conditions:
+      - all:
+          - function: "len"
+            args: ["request.messages[*].content[type!=text]"]
+            operator: ">"
+            value: 0
+          - field: "processing.cost_estimate.total_cost"
+            operator: ">"
+            value: 2.00
+    actions:
+      - type: "alert"
+        webhook: "https://alerts.example.com/high-cost-multimodal"
+        message: "High-cost multimodal request: ${{ processing.cost_estimate.total_cost }}"
+        severity: "medium"
+      - type: "log"
+        level: "warn"
+        message: "Expensive multimodal request: ${{ processing.cost_estimate.total_cost }}"
+      - type: "allow"

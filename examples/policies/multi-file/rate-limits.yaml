@@ -1,0 +1,44 @@
+# Rate Limiting Policy
+# Priority range: 100-149
+# Owner: Platform Team
+
+mpl_version: "1.0"
+name: "rate-limits"
+version: "1.0.0"
+description: "Rate limiting and quota management"
+
+metadata:
+  owner: "platform-team@example.com"
+  category: "quota-management"
+  priority_range: "100-149"
+
+rules:
+  - name: "free-tier-hourly-limit"
+    priority: 120
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "=="
+          value: "free"
+        - field: "rate_limit.hourly"
+          operator: ">"
+          value: 100
+    actions:
+      - type: "deny"
+        message: "Free tier: 100 requests/hour limit exceeded"
+      - type: "log"
+        level: "info"
+        message: "Rate limit enforced"
+
+  - name: "burst-protection"
+    priority: 140
+    conditions:
+      field: "rate_limit.per_second"
+      operator: ">"
+      value: 10
+    actions:
+      - type: "deny"
+        message: "Too many requests. Max 10/second."
+      - type: "log"
+        level: "warning"
+        message: "Burst limit triggered"

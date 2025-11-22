@@ -1,0 +1,325 @@
+# Production Policy
+#
+# Production-ready comprehensive policy combining security, compliance,
+# cost control, and observability best practices.
+#
+# This policy is ready to deploy and covers most common governance requirements.
+
+mpl_version: "1.0"
+name: "production-comprehensive"
+version: "1.0.0"
+description: "Production-grade comprehensive LLM governance policy"
+
+metadata:
+  author: "Mercator Security Team"
+  category: "production"
+  tags: ["production", "comprehensive", "security", "compliance"]
+  environment: "production"
+  last_reviewed: "2024-11-19"
+  compliance_frameworks: ["SOC2", "GDPR", "HIPAA"]
+
+rules:
+  # ============================================================================
+  # TIER 1: Critical Security (Priority 200-300)
+  # ============================================================================
+
+  - name: "emergency-circuit-breaker"
+    description: "Global kill switch for emergency situations"
+    priority: 300
+    conditions:
+      field: "system.emergency_mode"
+      operator: "=="
+      value: true
+    actions:
+      - type: "deny"
+        message: "Service temporarily unavailable for maintenance"
+      - type: "log"
+        level: "critical"
+        message: "Emergency mode active - all requests blocked"
+
+  - name: "block-injection-attacks"
+    description: "Detect and block prompt injection attempts"
+    priority: 250
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "ignore previous instructions"
+        - "forget everything"
+        - "jailbreak"
+        - "system: you are now"
+        - "disregard safety"
+    actions:
+      - type: "deny"
+        message: "Security policy violation detected"
+      - type: "log"
+        level: "error"
+        message: "Prompt injection attempt blocked"
+        include_fields:
+          - "request.user.id"
+          - "request.ip_address"
+          - "request.prompt"
+
+  - name: "prevent-pii-exposure"
+    description: "Block requests containing sensitive personal data"
+    priority: 240
+    conditions:
+      any:
+        - field: "request.prompt"
+          operator: "matches_regex"
+          value: "\\b\\d{3}-\\d{2}-\\d{4}\\b"  # SSN
+        - field: "request.prompt"
+          operator: "matches_regex"
+          value: "\\b[4-6]\\d{15}\\b"  # Credit card
+        - field: "request.prompt"
+          operator: "contains_any"
+          value: ["social security", "credit card number", "password"]
+    actions:
+      - type: "deny"
+        message: "PII detected. Please remove sensitive information."
+      - type: "log"
+        level: "warning"
+        message: "PII detected in prompt"
+
+  # ============================================================================
+  # TIER 2: Authentication & Authorization (Priority 150-199)
+  # ============================================================================
+
+  - name: "require-valid-authentication"
+    description: "All requests must have valid authentication"
+    priority: 180
+    conditions:
+      field: "request.user.authenticated"
+      operator: "=="
+      value: false
+    actions:
+      - type: "deny"
+        message: "Authentication required. Please provide valid credentials."
+      - type: "log"
+        level: "warning"
+        message: "Unauthenticated request blocked"
+
+  - name: "enforce-tier-based-model-access"
+    description: "Control model access based on subscription tier"
+    priority: 160
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "in"
+          value: ["free", "basic"]
+        - field: "request.model"
+          operator: "in"
+          value: ["gpt-4", "gpt-4-turbo", "claude-3-opus"]
+    actions:
+      - type: "deny"
+        message: "Premium models require Pro or Enterprise subscription"
+      - type: "log"
+        level: "info"
+        message: "Premium model access denied"
+
+  - name: "block-suspended-users"
+    description: "Prevent access for suspended or deactivated users"
+    priority: 190
+    conditions:
+      field: "request.user.status"
+      operator: "in"
+      value: ["suspended", "deactivated", "banned"]
+    actions:
+      - type: "deny"
+        message: "Account access suspended. Contact support for assistance."
+      - type: "log"
+        level: "warning"
+        message: "Suspended user attempted access"
+
+  # ============================================================================
+  # TIER 3: Rate Limiting & Cost Control (Priority 100-149)
+  # ============================================================================
+
+  - name: "free-tier-hourly-limit"
+    description: "100 requests/hour for free tier"
+    priority: 120
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "=="
+          value: "free"
+        - field: "rate_limit.hourly"
+          operator: ">"
+          value: 100
+    actions:
+      - type: "deny"
+        message: "Free tier limit: 100 requests/hour. Upgrade for higher limits."
+      - type: "log"
+        level: "info"
+        message: "Free tier hourly limit enforced"
+
+  - name: "basic-tier-hourly-limit"
+    description: "1000 requests/hour for basic tier"
+    priority: 120
+    conditions:
+      all:
+        - field: "request.user.tier"
+          operator: "=="
+          value: "basic"
+        - field: "rate_limit.hourly"
+          operator: ">"
+          value: 1000
+    actions:
+      - type: "deny"
+        message: "Basic tier limit: 1000 requests/hour."
+      - type: "log"
+        level: "info"
+        message: "Basic tier hourly limit enforced"
+
+  - name: "token-quota-enforcement"
+    description: "Daily token quota limits"
+    priority: 110
+    conditions:
+      field: "quota.daily_tokens_remaining"
+      operator: "<="
+      value: 0
+    actions:
+      - type: "deny"
+        message: "Daily token quota exceeded. Resets at midnight UTC."
+      - type: "log"
+        level: "info"
+        message: "Daily token quota enforced"
+
+  - name: "burst-rate-protection"
+    description: "Prevent request bursts (max 10/second)"
+    priority: 140
+    conditions:
+      field: "rate_limit.per_second"
+      operator: ">"
+      value: 10
+    actions:
+      - type: "deny"
+        message: "Too many requests. Maximum 10 per second."
+      - type: "log"
+        level: "warning"
+        message: "Burst rate limit triggered"
+
+  # ============================================================================
+  # TIER 4: Content & Compliance (Priority 50-99)
+  # ============================================================================
+
+  - name: "block-harmful-content"
+    description: "Filter inappropriate or dangerous content"
+    priority: 90
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "violence"
+        - "hate speech"
+        - "illegal activity"
+        - "self-harm"
+    actions:
+      - type: "deny"
+        message: "Content policy violation"
+      - type: "log"
+        level: "error"
+        message: "Harmful content blocked"
+
+  - name: "gdpr-compliance-logging"
+    description: "Log requests with EU user data for GDPR compliance"
+    priority: 70
+    conditions:
+      field: "request.user.region"
+      operator: "=="
+      value: "EU"
+    actions:
+      - type: "log"
+        level: "info"
+        message: "EU user request logged for GDPR compliance"
+        include_fields:
+          - "request.user.id"
+          - "request.timestamp"
+          - "request.model"
+      - type: "allow"
+        message: "GDPR compliant processing"
+
+  - name: "flag-medical-legal-financial"
+    description: "Flag sensitive advice requests for review"
+    priority: 60
+    conditions:
+      field: "request.prompt"
+      operator: "contains_any"
+      value:
+        - "medical advice"
+        - "legal advice"
+        - "financial advice"
+        - "investment recommendation"
+    actions:
+      - type: "allow"
+        message: "Sensitive topic flagged"
+      - type: "log"
+        level: "warning"
+        message: "Sensitive advice request flagged for review"
+        include_fields:
+          - "request.user.id"
+          - "request.prompt"
+
+  # ============================================================================
+  # TIER 5: Transformations & Enhancements (Priority 1-49)
+  # ============================================================================
+
+  - name: "add-system-instructions"
+    description: "Add standard system instructions to all requests"
+    priority: 40
+    conditions:
+      field: "request.type"
+      operator: "=="
+      value: "completion"
+    actions:
+      - type: "transform"
+        prepend_to_prompt: |
+          You are a helpful, harmless, and honest AI assistant.
+          - Provide accurate, factual information
+          - Refuse requests for harmful, illegal, or unethical content
+          - Respect user privacy and data protection
+          - Cite sources when providing factual claims
+
+
+  - name: "enforce-json-api-responses"
+    description: "Require JSON format for API requests"
+    priority: 30
+    conditions:
+      field: "request.source"
+      operator: "=="
+      value: "api"
+    actions:
+      - type: "transform"
+        set_parameter:
+          name: "response_format"
+          value: "json"
+
+  - name: "add-usage-tracking"
+    description: "Track all requests for analytics"
+    priority: 20
+    conditions:
+      field: "request.type"
+      operator: "=="
+      value: "completion"
+    actions:
+      - type: "log"
+        level: "info"
+        message: "Request processed"
+        include_fields:
+          - "request.user.id"
+          - "request.user.tier"
+          - "request.model"
+          - "request.estimated_tokens"
+          - "request.timestamp"
+          - "environment"
+
+  - name: "default-allow-rule"
+    description: "Allow requests that pass all security checks"
+    priority: 1
+    conditions:
+      field: "request.type"
+      operator: "=="
+      value: "completion"
+    actions:
+      - type: "allow"
+        message: "Request approved - all checks passed"
