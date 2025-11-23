@@ -118,22 +118,38 @@ evidence:
 **2. Create a policy file** (`policies.yaml`):
 
 ```yaml
-version: "1.0"
-policies:
-  - name: "budget-enforcement"
-    description: "Enforce user spending limits"
-    rules:
-      - condition: "request.metadata.user_budget_spent + request.estimated_cost > request.metadata.user_budget_limit"
-        action: "block"
-        reason: "User has exceeded their budget limit"
+# Simple logging policy - logs all requests for audit trail
+mpl_version: "1.0"
+name: "simple-logging"
+version: "1.0.0"
+description: "Log all LLM requests for audit trail"
 
-  - name: "rate-limiting"
-    description: "Limit requests per user"
-    rules:
-      - condition: "request.metadata.user_request_count > 100"
-        action: "block"
-        reason: "Rate limit exceeded (100 requests/hour)"
+metadata:
+  author: "Your Team"
+  category: "observability"
+  tags: ["logging", "audit"]
+
+rules:
+  - name: "log-all-requests"
+    description: "Log every request with basic information"
+    enabled: true
+    priority: 100
+
+    conditions:
+      # Match all requests (always true)
+      - field: "processing.complexity_score"
+        operator: ">="
+        value: 0
+
+    actions:
+      - type: "log"
+        level: "info"
+        message: "LLM request: user={{ request.user }}, model={{ request.model }}"
+
+      - type: "allow"
 ```
+
+For more advanced policy examples including rate limiting, budget enforcement, and content filtering, see the [examples/policies/](examples/policies/) directory.
 
 **3. Start the proxy server:**
 

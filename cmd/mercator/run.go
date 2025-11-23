@@ -247,7 +247,7 @@ func runServer(cmd *cobra.Command, args []string) error {
 	fmt.Println()
 	fmt.Printf("✓ Server listening on %s\n", cfg.Proxy.ListenAddress)
 	fmt.Printf("✓ Health endpoint: http://%s/health\n", cfg.Proxy.ListenAddress)
-	fmt.Printf("✓ Metrics endpoint: http://%s/metrics\n", cfg.Proxy.ListenAddress)
+	fmt.Printf("✓ Ready endpoint: http://%s/ready\n", cfg.Proxy.ListenAddress)
 	fmt.Println("\nPress Ctrl+C to stop")
 
 	// Wait for shutdown signal or server error

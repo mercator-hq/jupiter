@@ -1,0 +1,151 @@
+# Test Cases for rate-limiting.yaml Policy
+#
+# These test cases verify that rate limiting policies correctly block
+# requests that exceed configured limits.
+#
+# Run with:
+#   mercator test --policy examples/policies/rate-limiting.yaml --tests examples/policies/tests/rate-limiting-tests.yaml
+
+tests:
+  - name: "Allow free tier user under limit"
+    description: "Free tier user with 50 requests should be allowed"
+    request:
+      model: "gpt-3.5-turbo"
+      messages:
+        - role: "user"
+          content: "Hello"
+    metadata:
+      user:
+        tier: "free"
+        id: "free-user-1"
+      rate_limit:
+        hourly: 50
+        per_second: 1
+        daily_tokens: 10000
+        model_hourly: 5
+    expect:
+      action: "allow"
+
+  - name: "Block free tier user over limit"
+    description: "Free tier user with 101 requests should be blocked"
+    request:
+      model: "gpt-3.5-turbo"
+      messages:
+        - role: "user"
+          content: "Hello"
+    metadata:
+      user:
+        tier: "free"
+        id: "free-user-2"
+      rate_limit:
+        hourly: 101
+        per_second: 1
+    expect:
+      action: "deny"
+      reason: "Free tier rate limit exceeded"
+
+  - name: "Block free tier premium model over limit"
+    description: "Free tier user exceeding GPT-4 model limit"
+    request:
+      model: "gpt-4"
+      messages:
+        - role: "user"
+          content: "Complex query"
+    metadata:
+      user:
+        tier: "free"
+        id: "free-user-3"
+      rate_limit:
+        hourly: 50
+        model_hourly: 21
+    expect:
+      action: "deny"
+      reason: "Premium model rate limit exceeded"
+
+  - name: "Allow basic tier user under limit"
+    description: "Basic tier user with 500 requests should be allowed"
+    request:
+      model: "gpt-3.5-turbo"
+      messages:
+        - role: "user"
+          content: "Question"
+    metadata:
+      user:
+        tier: "basic"
+        id: "basic-user-1"
+      rate_limit:
+        hourly: 500
+        per_second: 2
+    expect:
+      action: "allow"
+
+  - name: "Block basic tier user over limit"
+    description: "Basic tier user with 1001 requests should be blocked"
+    request:
+      model: "gpt-3.5-turbo"
+      messages:
+        - role: "user"
+          content: "Question"
+    metadata:
+      user:
+        tier: "basic"
+        id: "basic-user-2"
+      rate_limit:
+        hourly: 1001
+        per_second: 2
+    expect:
+      action: "deny"
+      reason: "Basic tier rate limit exceeded"
+
+  - name: "Block burst protection"
+    description: "User making 11 requests per second should be blocked"
+    request:
+      model: "gpt-3.5-turbo"
+      messages:
+        - role: "user"
+          content: "Rapid request"
+    metadata:
+      user:
+        tier: "basic"
+        id: "burst-user"
+      rate_limit:
+        hourly: 100
+        per_second: 11
+    expect:
+      action: "deny"
+      reason: "Request rate too high"
+
+  - name: "Block token limit exceeded"
+    description: "Free tier user exceeding daily token limit"
+    request:
+      model: "gpt-3.5-turbo"
+      messages:
+        - role: "user"
+          content: "Long conversation"
+    metadata:
+      user:
+        tier: "free"
+        id: "token-user"
+      rate_limit:
+        hourly: 50
+        daily_tokens: 100001
+    expect:
+      action: "deny"
+      reason: "Daily token limit exceeded"
+
+  - name: "Allow pro tier user (no limits)"
+    description: "Pro tier users should bypass rate limits"
+    request:
+      model: "gpt-4"
+      messages:
+        - role: "user"
+          content: "Complex query"
+    metadata:
+      user:
+        tier: "pro"
+        id: "pro-user-1"
+      rate_limit:
+        hourly: 5000
+        per_second: 50
+    expect:
+      action: "allow"
