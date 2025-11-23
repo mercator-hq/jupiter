@@ -59,6 +59,56 @@ checksum:
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
+# Docker images
+dockers:
+  - image_templates:
+      - "ghcr.io/mercator-hq/jupiter:{{ .Version }}-amd64"
+      - "ghcr.io/mercator-hq/jupiter:latest-amd64"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=GitOps-native LLM governance runtime and policy engine"
+      - "--label=org.opencontainers.image.url=https://github.com/mercator-hq/jupiter"
+      - "--label=org.opencontainers.image.source=https://github.com/mercator-hq/jupiter"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
+    goarch: amd64
+    goos: linux
+
+  - image_templates:
+      - "ghcr.io/mercator-hq/jupiter:{{ .Version }}-arm64"
+      - "ghcr.io/mercator-hq/jupiter:latest-arm64"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=GitOps-native LLM governance runtime and policy engine"
+      - "--label=org.opencontainers.image.url=https://github.com/mercator-hq/jupiter"
+      - "--label=org.opencontainers.image.source=https://github.com/mercator-hq/jupiter"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
+    goarch: arm64
+    goos: linux
+
+# Docker manifests for multi-arch images
+docker_manifests:
+  - name_template: "ghcr.io/mercator-hq/jupiter:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/mercator-hq/jupiter:{{ .Version }}-amd64"
+      - "ghcr.io/mercator-hq/jupiter:{{ .Version }}-arm64"
+
+  - name_template: "ghcr.io/mercator-hq/jupiter:latest"
+    image_templates:
+      - "ghcr.io/mercator-hq/jupiter:latest-amd64"
+      - "ghcr.io/mercator-hq/jupiter:latest-arm64"
+
 changelog:
   sort: asc
   use: github
@@ -100,6 +150,26 @@ release:
     GitOps-native LLM governance runtime and policy engine.
 
     ### Installation
+
+    **Docker (Recommended):**
+    ```bash
+    docker pull ghcr.io/mercator-hq/jupiter:{{ .Tag }}
+    docker run -p 8080:8080 -p 9090:9090 ghcr.io/mercator-hq/jupiter:{{ .Tag }}
+    ```
+
+    **Docker Compose:**
+    ```yaml
+    services:
+      mercator:
+        image: ghcr.io/mercator-hq/jupiter:{{ .Tag }}
+        ports:
+          - "8080:8080"
+          - "9090:9090"
+        volumes:
+          - ./config:/app/config
+          - ./policies:/app/policies
+          - ./data:/app/data
+    ```
 
     **macOS (arm64):**
     ```bash
