@@ -156,29 +156,37 @@ func TestSlidingWindow_Expiration(t *testing.T) {
 }
 
 func TestSlidingWindow_RollingWindow(t *testing.T) {
-	sw := NewSlidingWindow(200*time.Millisecond, 50*time.Millisecond)
+	// Use longer windows to handle race detector overhead
+	sw := NewSlidingWindow(1*time.Second, 100*time.Millisecond)
 
 	// Add value at T=0
+	start := time.Now()
 	sw.Add(100)
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(550 * time.Millisecond) // Add to bucket at 500ms
 
-	// Add value at T=50ms
+	// Add value at T=~550ms (bucket at 500ms)
 	sw.Add(200)
 	time.Sleep(50 * time.Millisecond)
 
-	// At T=100ms, sum should be 300
+	// At T=~600ms, sum should be 300
 	sum := sw.Sum()
 	if sum != 300 {
-		t.Errorf("Expected 300 at T=100ms, got %d", sum)
+		t.Errorf("Expected 300 before expiration, got %d", sum)
 	}
 
-	// Wait for first value to expire
-	time.Sleep(110 * time.Millisecond) // T=210ms
+	// Wait for first value to expire (window is 1s)
+	// Sleep until T=1.4s (first bucket at T=0 expires at T=1s, extra 400ms margin)
+	// Second bucket at T=500ms will still be within window (1400 - 1000 = 400ms cutoff, 500ms > 400ms)
+	elapsed := time.Since(start)
+	remainingSleep := (1400 * time.Millisecond) - elapsed
+	if remainingSleep > 0 {
+		time.Sleep(remainingSleep)
+	}
 
-	// First value (T=0) should be expired, only second value (T=50ms) remains
+	// First value (T=0) should be expired, only second value (T=~500ms) remains
 	sum = sw.Sum()
 	if sum != 200 {
-		t.Errorf("Expected 200 after first expiration, got %d", sum)
+		t.Errorf("Expected 200 after first expiration, got %d (elapsed: %v)", sum, time.Since(start))
 	}
 }
 
